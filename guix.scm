@@ -8,6 +8,7 @@
   (gnu packages guile)
   (gnu packages guile-xyz)
   (gnu packages pkg-config)
+  (gnu packages python-xyz)
   (gnu packages texinfo))
 
 (package
@@ -22,7 +23,7 @@
       ("pkg-config" ,pkg-config)
       ("texinfo" ,texinfo)))
   (inputs `(("guile" ,guile-3.0)))
-  (propagated-inputs `())
+  (propagated-inputs `("python-pywal" ,python-pywal))
   (synopsis "")
   (description "")
   (home-page "")

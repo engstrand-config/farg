@@ -4,22 +4,23 @@
   (version "0.1")
   (author "Fredrik Engstrand")
   (copyright (2021))
-  (synopsis "farg is a simple system colorscheme generator")
-  (description "farg is a simple system colorscheme generator with sensible defaults")
-  (home-page "https://github.com/engstrand-config/farg")
+  (synopsis
+    "farg is a simple system colorscheme generator")
+  (description
+    "farg is a simple system colorscheme generator with sensible defaults")
+  (home-page
+    "https://github.com/engstrand-config/farg")
   (license gpl3+)
-  (dependencies `())
+  (dependencies `("python-pywal" ,python-pywal))
   (files (libraries
            ((scheme-file "farg") (directory "farg" ())))
-         (tests ((directory "tests" ())))
-         (programs ((directory "scripts" ())))
+         (tests ((directory "tests" ((text-file ".keep")))))
+         (programs
+           ((directory "scripts" ((text-file ".keep")))))
          (documentation
            ((org-file "README")
-            (symlink "README" "README.org")
             (text-file "HACKING")
             (text-file "COPYING")
             (directory "doc" ((texi-file "farg")))))
          (infrastructure
-           ((scheme-file "guix")
-            (text-file ".gitignore")
-            (scheme-file "hall")))))
+           ((scheme-file "guix") (scheme-file "hall")))))
