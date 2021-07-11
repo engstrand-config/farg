@@ -1,5 +1,6 @@
 (define-module (farg)
                #:use-module (guix ui)
+               #:use-module (farg actions generate)
                #:use-module (ice-9 match)
                #:use-module (ice-9 format)
                #:use-module (ice-9 getopt-long))
@@ -8,6 +9,7 @@
 
 (define option-spec
   '((version (single-char #\v) (value #f))
+    (image   (single-char #\i) (value #t))
     (help    (single-char #\h) (value #f))))
 
 (define (show-help)
@@ -24,9 +26,7 @@
   (display (G_ (string-append "Invalid action '" action "'"))))
 
 (define (main args)
-  (let* ((option-spec '((version (single-char #\v) (value #f))
-                        (help    (single-char #\h) (value #f))))
-         (options (getopt-long args option-spec))
+  (let* ((options (getopt-long args option-spec))
          (help-wanted (option-ref options 'help #f))
          (version-wanted (option-ref options 'version #f)))
     (if (or version-wanted help-wanted)
@@ -34,12 +34,15 @@
           (if help-wanted (show-help) (display %version))
           (newline))
         (begin
-          (match (list-tail args 1) ; skip filename arg
-                 (("generate") (display "lets generate"))
-                 (("import") (display "lets import"))
-                 (("export") (display "lets export"))
-                 ((action) (show-invalid-action action))
-                 (() (show-help)))
-          (newline)))))
+          (if (eq? (length args) 1)
+              (show-help)
+              (begin
+                (match (cadr args) ; skip filename arg
+                      ("generate" (start-generator options))
+                      ("import" (display "lets import"))
+                      ("export" (display "lets export"))
+                      (action (show-invalid-action action))
+                      (() (show-help)))
+              (newline)))))))
 
-(main (command-line))
+  (main (command-line))

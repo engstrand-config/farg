@@ -13,7 +13,10 @@
   (license gpl3+)
   (dependencies `("python-pywal" ,python-pywal))
   (files (libraries
-           ((scheme-file "farg") (directory "farg" ())))
+           ((scheme-file "farg")
+            (directory
+              "farg"
+              ((directory "actions" ((scheme-file "generate")))))))
          (tests ((directory "tests" ((text-file ".keep")))))
          (programs
            ((directory "scripts" ((text-file ".keep")))))
