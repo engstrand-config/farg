@@ -1,0 +1,3 @@
+-*- mode: org; coding: utf-8; -*-
+
+#+TITLE: =farg=
