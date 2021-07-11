@@ -11,7 +11,9 @@
   (home-page
     "https://github.com/engstrand-config/farg")
   (license gpl3+)
-  (dependencies `(("python-pywal" ,python-pywal)))
+  (dependencies
+    `(("python-pywal" ,python-pywal)
+      ("imagemagick" ,imagemagick)))
   (files (libraries
            ((scheme-file "farg")
             (directory

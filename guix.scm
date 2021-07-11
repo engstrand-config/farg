@@ -6,6 +6,7 @@
   (gnu packages)
   (gnu packages autotools)
   (gnu packages guile)
+  (gnu packages imagemagick)
   (gnu packages guile-xyz)
   (gnu packages pkg-config)
   (gnu packages python-xyz)
@@ -23,7 +24,9 @@
       ("pkg-config" ,pkg-config)
       ("texinfo" ,texinfo)))
   (inputs `(("guile" ,guile-3.0)))
-  (propagated-inputs `(("python-pywal" ,python-pywal)))
+  (propagated-inputs
+    `(("python-pywal" ,python-pywal)
+      ("imagemagick" ,imagemagick)))
   (synopsis "")
   (description "")
   (home-page "")
