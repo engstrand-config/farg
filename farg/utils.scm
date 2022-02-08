@@ -1,6 +1,9 @@
 (define-module (farg utils)
-               #:use-module (srfi srfi-1)
-               #:use-module (gnu services))
+  #:use-module (srfi srfi-1)
+  #:use-module (gnu services))
 
 (define-public (list-of-services? lst)
-               (every service? lst))
+  (every service? lst))
+
+(define-public (maybe-string? str)
+  (or (string? str) (eq? str #f)))
