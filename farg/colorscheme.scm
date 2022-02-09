@@ -1,6 +1,7 @@
 (define-module (farg colorscheme)
   #:use-module (farg utils)
   #:use-module (farg config)
+  #:use-module (srfi srfi-1)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (gnu services configuration)
@@ -106,3 +107,35 @@
        (background (assoc-ref colors 0))
        (primary-text (assoc-ref colors 8))
        (secondary-text (assoc-ref colors 9)))))
+
+(define* (hex->rgba str #:key (alpha? #t))
+  "Converts a hex color STR into its RGBA color representation.
+If the hex color does not specify the alpha, it will default to 100%."
+  (define (split-rgb acc hex)
+    (if (eq? (string-length hex) 0)
+        acc
+        (split-rgb
+         (cons (exact->inexact (/ (string->number (string-take hex 2) 16) 255)) acc)
+         (string-drop hex 2))))
+
+  (let* ((hex (substring str 1))
+         (rgb (split-rgb '() hex))
+         (has-alpha? (eq? (length rgb) 4)))
+    (reverse
+     (if alpha?
+         (if has-alpha? (cons 1.0 rgb) rgb)
+         (if has-alpha? (list-tail rgb 1) rgb)))))
+
+;; Based on formula at https://www.myndex.com/WEB/LuminanceContrast.
+(define* (hex->luminance hex)
+  "Calculates the luminance of hex color HEX."
+  (apply + (map (lambda (pair) (* (car pair) (expt (cadr pair) 2.2)))
+                (zip '(0.2126 0.7152 0.0722)
+                     (hex->rgba hex #:alpha? #f)))))
+
+;; Based on https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el.
+(define* (contrast c1 c2)
+  "Calculates the WCAG contrast ratio between the hex colors C1 and C2."
+  (let ((ct (/ (+ (hex->luminance c1) 0.05)
+               (+ (hex->luminance c2) 0.05))))
+    (max ct (/ ct))))
