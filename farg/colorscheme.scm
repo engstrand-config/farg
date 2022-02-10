@@ -2,6 +2,7 @@
   #:use-module (farg utils)
   #:use-module (farg config)
   #:use-module (srfi srfi-1)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (gnu services configuration)
@@ -16,6 +17,11 @@
             colorscheme-secondary
             colorscheme-secondary-text
             colorscheme-background
+
+            hex->hsl
+            hex->rgba
+            hex->luminance
+            contrast
 
             colors->colorscheme
             generate-colorscheme
@@ -125,6 +131,43 @@ If the hex color does not specify the alpha, it will default to 100%."
      (if alpha?
          (if has-alpha? (cons 1.0 rgb) rgb)
          (if has-alpha? (list-tail rgb 1) rgb)))))
+
+(define* (hex->hsl hex)
+  "Converts a hex color HEX into its HSL color representation.
+Conversion of black and white will result in a hue of 0% (undefined)."
+  (define (safe-division x1 x2 denom)
+    (if (= denom 0.0)
+        0.0
+        (/ (- x1 x2) denom)))
+
+  (let* ((rgba (hex->rgba hex #:alpha? #f))
+         (c-min (apply min rgba))
+         (c-max (apply max rgba))
+         (lum (/ (+ c-min c-max) 2))
+         (sat (if (<= lum 0.5)
+                  (safe-division c-max c-min (+ c-max c-min))
+                  (safe-division c-max c-min (- 2.0 c-max c-min))))
+         (hue-denom (- c-max c-min))
+         (hue (if (= hue-denom 0.0)
+                  ;; Hue is undefined in cases where the denominator is 0.
+                  0.0
+                  (* 60.0
+                     (match (list-index (lambda (v) (eq? v c-max)) rgba)
+                       ;; Red
+                       (0 (safe-division (list-ref rgba 1)
+                                         (list-ref rgba 2)
+                                         hue-denom))
+                       ;; Green
+                       (1 (+ (safe-division (list-ref rgba 2)
+                                            (list-ref rgba 0)
+                                            hue-denom)
+                             2.0))
+                       ;; Blue
+                       (2 (+ (safe-division (list-ref rgba 0)
+                                            (list-ref rgba 1)
+                                            hue-denom)
+                             4.0)))))))
+    `(,(if (negative? hue) (+ hue 360) hue) ,sat ,lum)))
 
 ;; Based on formula at https://www.myndex.com/WEB/LuminanceContrast.
 (define* (hex->luminance hex)
