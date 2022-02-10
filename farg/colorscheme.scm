@@ -132,17 +132,15 @@ If the hex color does not specify the alpha, it will default to 100%."
          (if has-alpha? (cons 1.0 rgb) rgb)
          (if has-alpha? (list-tail rgb 1) rgb)))))
 
-(define* (hex->hsl hex)
-  "Converts a hex color HEX into its HSL color representation.
-Conversion of black and white will result in a hue of 0% (undefined)."
+(define* (rgb->hsl rgb)
+  "Converts RGB into its HSL color representation."
   (define (safe-division x1 x2 denom)
     (if (= denom 0.0)
         0.0
         (/ (- x1 x2) denom)))
 
-  (let* ((rgba (hex->rgba hex #:alpha? #f))
-         (c-min (apply min rgba))
-         (c-max (apply max rgba))
+  (let* ((c-min (apply min rgb))
+         (c-max (apply max rgb))
          (lum (/ (+ c-min c-max) 2))
          (sat (if (<= lum 0.5)
                   (safe-division c-max c-min (+ c-max c-min))
@@ -152,22 +150,31 @@ Conversion of black and white will result in a hue of 0% (undefined)."
                   ;; Hue is undefined in cases where the denominator is 0.
                   0.0
                   (* 60.0
-                     (match (list-index (lambda (v) (eq? v c-max)) rgba)
+                     (match (list-index (lambda (v) (eq? v c-max)) rgb)
                        ;; Red
-                       (0 (safe-division (list-ref rgba 1)
-                                         (list-ref rgba 2)
+                       (0 (safe-division (list-ref rgb 1)
+                                         (list-ref rgb 2)
                                          hue-denom))
                        ;; Green
-                       (1 (+ (safe-division (list-ref rgba 2)
-                                            (list-ref rgba 0)
+                       (1 (+ (safe-division (list-ref rgb 2)
+                                            (list-ref rgb 0)
                                             hue-denom)
                              2.0))
                        ;; Blue
-                       (2 (+ (safe-division (list-ref rgba 0)
-                                            (list-ref rgba 1)
+                       (2 (+ (safe-division (list-ref rgb 0)
+                                            (list-ref rgb 1)
                                             hue-denom)
                              4.0)))))))
     `(,(if (negative? hue) (+ hue 360) hue) ,sat ,lum)))
+
+(define* (hex->hsl hex)
+  "Converts a hex color HEX into its HSL color representation.
+Conversion of black and white will result in a hue of 0% (undefined)."
+  (rgb->hsl (hex->rgba hex #:alpha? #f)))
+
+(define* (hsl->hex hsl)
+  "Converts HSL into its hex color representation."
+  hsl)
 
 ;; Based on formula at https://www.myndex.com/WEB/LuminanceContrast.
 (define* (hex->luminance hex)
@@ -182,3 +189,24 @@ Conversion of black and white will result in a hue of 0% (undefined)."
   (let ((ct (/ (+ (hex->luminance c1) 0.05)
                (+ (hex->luminance c2) 0.05))))
     (max ct (/ ct))))
+
+(define* (bounded lower upper value)
+  "Bounds VALUE between LOWER and UPPER."
+  (min upper (max lower value)))
+
+(define* (adjust-luminance hex percentage proc)
+  "Adjusts the luminance of HEX by applying PERCENTAGE
+and current luminance to PROC."
+  (let ((hsl (hex->hsl hex)))
+    `(,(car hsl)
+      ,(cadr hsl)
+      ,(bounded 0.0 1.0 (proc (caddr hsl)
+                              (/ percentage 100))))))
+
+(define* (lighten hex percentage)
+  "Increases the luminance of hex color HEX by PERCENTAGE."
+  (hsl->hex (adjust-luminance hex percentage +)))
+
+(define* (darken hex percentage)
+  "Decreases the luminance of hex color HEX by PERCENTAGE."
+  (hsl->hex (adjust-luminance hex percentage -)))
