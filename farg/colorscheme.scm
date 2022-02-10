@@ -41,6 +41,30 @@
             generate-colorscheme
             read-generated-colorscheme))
 
+;; TODO: Add procedure that will only call hex->hsl and hsl->hex once, e.g.
+;; (apply-filters '((lighten 10) (saturate 20) (brighten 5)) "#000000")
+
+;; TODO: Add function for finding color with contrast ratio
+
+;; TODO: Add guix command for choosing a wallpaper and using it in the
+;;       colorscheme generation before running a reconfigure, e.g.
+;;       'guix colorscheme'. It can be saved as an environment variable or file
+;;       when generating the home environment. When running a regular reconfigure,
+;;       the environment variable can be read and applied appropriately.
+
+;; TODO: How should we handle themes? Some wallpapers must be adjusted
+;;       to look good. This should be done using some configuration option.
+
+;; TODO: Is it possible to generate two home environments? One for light and one
+;;       for dark colorschemes. This way you can easily switch between light and dark
+;;       using e.g. 'guix colorscheme light', 'guix colorscheme dark'.
+
+;; TODO: Add field for custom colors, generated from the base colors.
+;;       This allows you to generate shades that are frequently used.
+;;       The performance is fine, but if you use a certain shade 50 times,
+;;       you are better off saving that shade.
+;;
+;; TODO: Save wallpaper to store.
 (define-configuration
   colorscheme
   (light?
@@ -69,9 +93,9 @@
    "Main background color")
   (no-serialization))
 
-;; TODO: Add color conversion helpers, e.g. hex->rgb.
-;; TODO: Add color manipulation helpers, e.g. darken, lighten, saturate, adjust-contrast, etc.
-
+;; TODO: Update XDG_CACHE_HOME during execution?
+;;       The generated colors can then be written as a file to the store
+;;       and symlinked to your ~/.cache/wal directory.
 (define (generate-colorscheme config)
   (system (string-join
            (list "$(guix build python-pywal)/bin/wal"
