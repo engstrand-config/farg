@@ -18,6 +18,8 @@
             colorscheme-secondary-text
             colorscheme-background
 
+            set-alpha
+            with-alpha
             hex->hsl
             hex->rgba
             hex->luminance
@@ -126,6 +128,24 @@
        (primary-text (assoc-ref colors 8))
        (secondary-text (assoc-ref colors 9)))))
 
+(define* (set-alpha prev new)
+  "Mirrors the alpha channel of PREV to NEW. If NEW has an alpha
+channel, but PREV does not, it will be removed."
+  (let ((prev-alpha? (eq? (string-length prev) 9))
+        (new-alpha? (eq? (string-length new) 9)))
+    (cond
+     ((and (not prev-alpha?) new-alpha?) (string-drop-right new 2))
+     ((and prev-alpha? (not new-alpha?)) (string-append new (string-take-right prev 2)))
+     (else new))))
+
+(define* (with-alpha hex alpha)
+  "Sets the alpha channel of HEX based on the percentage ALPHA.
+If HEX has an alpha set, it will be replaced."
+  (let ((new-alpha (format #f "~2,'0x" (inexact->exact (round (* 255.0 (/ alpha 100)))))))
+    (if (eq? (string-length hex) 9)
+        (string-append (string-take hex 7) new-alpha)
+        (string-append hex new-alpha))))
+
 (define* (hex->rgba str #:key (alpha? #f))
   "Converts a hex color STR into its RGBA color representation.
 If the hex color does not specify the alpha, it will default to 100%."
@@ -164,7 +184,7 @@ Conversion of black and white will result in a hue of 0% (undefined)."
       acc
       (format #f "~2,'0x" (bounded 0 255 (inexact->exact (round (* v 255)))))))
    "#"
-   (if (and alpha? (= (length rgba) 3))
+   (if (or alpha? (= (length rgba) 3))
        (append rgba '(1.0))
        rgba)))
 
@@ -274,21 +294,21 @@ and current saturation to PROC."
 
 (define* (brighten hex #:optional (percentage 10))
   "Decreases the brightness of hex color HEX by PERCENTAGE."
-  (rgba->hex (map (lambda (v) (bounded 0 255 (+ v (percentage / 100))))
-                  (hex->rgba hex))))
+  (set-alpha hex (rgba->hex (map (lambda (v) (bounded 0 255 (+ v (percentage / 100))))
+                                 (hex->rgba hex)))))
 
 (define* (lighten hex #:optional (percentage 10))
   "Increases the luminance of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
+  (set-alpha hex (hsl->hex (adjust-luminance (hex->hsl hex) percentage +))))
 
 (define* (darken hex #:optional (percentage 10))
   "Decreases the luminance of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
+  (set-alpha hex (hsl->hex (adjust-luminance (hex->hsl hex) percentage -))))
 
 (define* (saturate hex #:optional (percentage 10))
   "Increases the saturation of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
+  (set-alpha (hsl->hex (adjust-luminance (hex->hsl hex) percentage +))))
 
 (define* (desaturate hex #:optional (percentage 10))
   "Decreases the saturation of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
+  (set-alpha (hsl->hex (adjust-luminance (hex->hsl hex) percentage -))))
