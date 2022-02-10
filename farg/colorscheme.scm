@@ -26,9 +26,14 @@
             hsl->hex
             hsl->rgba
             contrast
+            adjust-hue
+            adjust-saturation
             adjust-luminance
             lighten
             darken
+            brighten
+            saturate
+            desaturate
 
             colors->colorscheme
             generate-colorscheme
@@ -243,19 +248,47 @@ Conversion of black and white will result in a hue of 0% (undefined)."
   "Bounds VALUE between LOWER and UPPER."
   (min upper (max lower value)))
 
-(define* (adjust-luminance hex percentage proc)
-  "Adjusts the luminance of HEX by applying PERCENTAGE
+;; TODO: Combine adjust-* procedures into one.
+(define* (adjust-luminance hsl percentage proc)
+  "Adjusts the luminance of HSL by applying PERCENTAGE
 and current luminance to PROC."
-  (let ((hsl (hex->hsl hex)))
-    `(,(car hsl)
-      ,(cadr hsl)
-      ,(bounded 0.0 1.0 (proc (caddr hsl)
-                              (/ percentage 100))))))
+  `(,(car hsl)
+    ,(cadr hsl)
+    ,(bounded 0.0 1.0 (proc (caddr hsl)
+                            (/ percentage 100)))))
+
+(define* (adjust-saturation hsl percentage proc)
+  "Adjusts the saturation of HSL by applying PERCENTAGE
+and current saturation to PROC."
+  `(,(car hsl)
+    ,(bounded 0.0 1.0 (proc (cadr hsl)
+                            (/ percentage 100)))
+    ,(caddr hsl)))
+
+(define* (adjust-hue hsl percentage proc)
+  "Adjusts the hue of HSL by applying PERCENTAGE and current hue to PROC."
+  `(,(bounded 0.0 1.0 (proc (car hsl)
+                            (/ percentage 100)))
+    ,(cadr hsl)
+    ,(caddr hsl)))
+
+(define* (brighten hex percentage)
+  "Decreases the brightness of hex color HEX by PERCENTAGE."
+  (rgba->hex (map (lambda (v) (bounded 0 255 (+ v (percentage / 100))))
+                  (hex->rgba hex))))
 
 (define* (lighten hex percentage)
   "Increases the luminance of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance hex percentage +)))
+  (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
 
 (define* (darken hex percentage)
   "Decreases the luminance of hex color HEX by PERCENTAGE."
-  (hsl->hex (adjust-luminance hex percentage -)))
+  (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
+
+(define* (saturate hex percentage)
+  "Increases the saturation of hex color HEX by PERCENTAGE."
+  (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
+
+(define* (desaturate hex percentage)
+  "Decreases the saturation of hex color HEX by PERCENTAGE."
+  (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
