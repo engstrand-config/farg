@@ -272,23 +272,23 @@ and current saturation to PROC."
     ,(cadr hsl)
     ,(caddr hsl)))
 
-(define* (brighten hex percentage)
+(define* (brighten hex #:optional (percentage 10))
   "Decreases the brightness of hex color HEX by PERCENTAGE."
   (rgba->hex (map (lambda (v) (bounded 0 255 (+ v (percentage / 100))))
                   (hex->rgba hex))))
 
-(define* (lighten hex percentage)
+(define* (lighten hex #:optional (percentage 10))
   "Increases the luminance of hex color HEX by PERCENTAGE."
   (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
 
-(define* (darken hex percentage)
+(define* (darken hex #:optional (percentage 10))
   "Decreases the luminance of hex color HEX by PERCENTAGE."
   (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
 
-(define* (saturate hex percentage)
+(define* (saturate hex #:optional (percentage 10))
   "Increases the saturation of hex color HEX by PERCENTAGE."
   (hsl->hex (adjust-luminance (hex->hsl hex) percentage +)))
 
-(define* (desaturate hex percentage)
+(define* (desaturate hex #:optional (percentage 10))
   "Decreases the saturation of hex color HEX by PERCENTAGE."
   (hsl->hex (adjust-luminance (hex->hsl hex) percentage -)))
