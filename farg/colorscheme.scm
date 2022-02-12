@@ -18,8 +18,6 @@
             colorscheme-secondary-text
             colorscheme-background
 
-            set-alpha
-            with-alpha
             hex->hsl
             hex->rgba
             hex->luminance
@@ -27,15 +25,26 @@
             rgba->hsl
             hsl->hex
             hsl->rgba
+
+            set-alpha
+            with-alpha
+            with-filters
             contrast
             adjust-hue
             adjust-saturation
             adjust-luminance
+
             lighten
             darken
             brighten
             saturate
             desaturate
+
+            hsl:lighten
+            hsl:darken
+            hsl:brighten
+            hsl:saturate
+            hsl:desaturate
 
             colors->colorscheme
             generate-colorscheme
@@ -316,23 +325,56 @@ and current saturation to PROC."
     ,(cadr hsl)
     ,(caddr hsl)))
 
+(define* (hsl:brighten hsl percentage)
+  (rgba->hsl (map (lambda (v) (bounded 0 255 (+ v (/ percentage 100))))
+                  (hsl->rgba hsl))))
+
+(define* (hsl:lighten hsl percentage)
+  (adjust-luminance hsl percentage +))
+
+(define* (hsl:darken hsl percentage)
+  (adjust-luminance hsl percentage -))
+
+(define* (hsl:saturate hsl percentage)
+  (adjust-saturation hsl percentage +))
+
+(define* (hsl:desaturate hsl percentage)
+  (adjust-saturation hsl percentage -))
+
 (define* (brighten hex #:optional (percentage 10))
   "Decreases the brightness of hex color HEX by PERCENTAGE."
-  (set-alpha hex (rgba->hex (map (lambda (v) (bounded 0 255 (+ v (percentage / 100))))
-                                 (hex->rgba hex)))))
+  (set-alpha hex
+             (rgba->hex
+              (map (lambda (v) (bounded 0 255 (+ v (/ percentage 100))))
+                   (hex->rgba hex)))))
 
 (define* (lighten hex #:optional (percentage 10))
   "Increases the luminance of hex color HEX by PERCENTAGE."
-  (set-alpha hex (hsl->hex (adjust-luminance (hex->hsl hex) percentage +))))
+  (set-alpha hex (hsl->hex (hsl:lighten (hex->hsl hex) percentage))))
 
 (define* (darken hex #:optional (percentage 10))
   "Decreases the luminance of hex color HEX by PERCENTAGE."
-  (set-alpha hex (hsl->hex (adjust-luminance (hex->hsl hex) percentage -))))
+  (set-alpha hex (hsl->hex (hsl:darken (hex->hsl hex) percentage))))
 
 (define* (saturate hex #:optional (percentage 10))
   "Increases the saturation of hex color HEX by PERCENTAGE."
-  (set-alpha (hsl->hex (adjust-luminance (hex->hsl hex) percentage +))))
+  (set-alpha (hsl->hex (hsl:saturate (hex->hsl hex) percentage))))
 
 (define* (desaturate hex #:optional (percentage 10))
   "Decreases the saturation of hex color HEX by PERCENTAGE."
-  (set-alpha (hsl->hex (adjust-luminance (hex->hsl hex) percentage -))))
+  (set-alpha (hsl->hex (hsl:desaturate (hex->hsl hex) percentage))))
+
+(define* (with-filters hex filters)
+  "Applies the filters in FILTERS to HEX. Only converts between color representations once, thus yielding better performance.
+@example
+(with-filters \"#000000\" '((lighten 20) (saturate 20) (brighten 10)))
+@end example"
+  (set-alpha
+   hex
+   (hsl->hex
+    (fold (lambda (filter acc)
+            (apply (primitive-eval (symbol-append 'hsl: (car filter)))
+                   (let ((args (list-tail filter 1)))
+                     `(,acc ,@(if (null? args) 10 args)))))
+            (hex->hsl hex)
+            filters))))
