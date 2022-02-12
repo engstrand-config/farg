@@ -50,9 +50,6 @@
             generate-colorscheme
             read-generated-colorscheme))
 
-;; TODO: Add procedure that will only call hex->hsl and hsl->hex once, e.g.
-;; (apply-filters '((lighten 10) (saturate 20) (brighten 5)) "#000000")
-
 ;; TODO: Add function for finding color with contrast ratio
 
 ;; TODO: Add guix command for choosing a wallpaper and using it in the
@@ -302,67 +299,67 @@ Conversion of black and white will result in a hue of 0% (undefined)."
   (min upper (max lower value)))
 
 ;; TODO: Combine adjust-* procedures into one.
-(define* (adjust-luminance hsl percentage proc)
-  "Adjusts the luminance of HSL by applying PERCENTAGE
+(define* (adjust-luminance hsl amount proc)
+  "Adjusts the luminance of HSL by applying AMOUNT
 and current luminance to PROC."
   `(,(car hsl)
     ,(cadr hsl)
     ,(bounded 0.0 1.0 (proc (caddr hsl)
-                            (/ percentage 100)))))
+                            (/ amount 100)))))
 
-(define* (adjust-saturation hsl percentage proc)
-  "Adjusts the saturation of HSL by applying PERCENTAGE
+(define* (adjust-saturation hsl amount proc)
+  "Adjusts the saturation of HSL by applying AMOUNT
 and current saturation to PROC."
   `(,(car hsl)
     ,(bounded 0.0 1.0 (proc (cadr hsl)
-                            (/ percentage 100)))
+                            (/ amount 100)))
     ,(caddr hsl)))
 
-(define* (adjust-hue hsl percentage proc)
-  "Adjusts the hue of HSL by applying PERCENTAGE and current hue to PROC."
+(define* (adjust-hue hsl amount proc)
+  "Adjusts the hue of HSL by applying AMOUNT and current hue to PROC."
   `(,(bounded 0.0 1.0 (proc (car hsl)
-                            (/ percentage 100)))
+                            (/ amount 100)))
     ,(cadr hsl)
     ,(caddr hsl)))
 
-(define* (hsl:brighten hsl percentage)
-  (rgba->hsl (map (lambda (v) (bounded 0 255 (+ v (/ percentage 100))))
+(define* (hsl:brighten hsl amount)
+  (rgba->hsl (map (lambda (v) (bounded 0 255 (+ v (/ amount 100))))
                   (hsl->rgba hsl))))
 
-(define* (hsl:lighten hsl percentage)
-  (adjust-luminance hsl percentage +))
+(define* (hsl:lighten hsl amount)
+  (adjust-luminance hsl amount +))
 
-(define* (hsl:darken hsl percentage)
-  (adjust-luminance hsl percentage -))
+(define* (hsl:darken hsl amount)
+  (adjust-luminance hsl amount -))
 
-(define* (hsl:saturate hsl percentage)
-  (adjust-saturation hsl percentage +))
+(define* (hsl:saturate hsl amount)
+  (adjust-saturation hsl amount +))
 
-(define* (hsl:desaturate hsl percentage)
-  (adjust-saturation hsl percentage -))
+(define* (hsl:desaturate hsl amount)
+  (adjust-saturation hsl amount -))
 
-(define* (brighten hex #:optional (percentage 10))
-  "Decreases the brightness of hex color HEX by PERCENTAGE."
+(define* (brighten hex #:optional (amount 10))
+  "Decreases the brightness of hex color HEX by AMOUNT."
   (set-alpha hex
              (rgba->hex
-              (map (lambda (v) (bounded 0 255 (+ v (/ percentage 100))))
+              (map (lambda (v) (bounded 0 255 (+ v (/ amount 100))))
                    (hex->rgba hex)))))
 
-(define* (lighten hex #:optional (percentage 10))
-  "Increases the luminance of hex color HEX by PERCENTAGE."
-  (set-alpha hex (hsl->hex (hsl:lighten (hex->hsl hex) percentage))))
+(define* (lighten hex #:optional (amount 10))
+  "Increases the luminance of hex color HEX by AMOUNT."
+  (set-alpha hex (hsl->hex (hsl:lighten (hex->hsl hex) amount))))
 
-(define* (darken hex #:optional (percentage 10))
-  "Decreases the luminance of hex color HEX by PERCENTAGE."
-  (set-alpha hex (hsl->hex (hsl:darken (hex->hsl hex) percentage))))
+(define* (darken hex #:optional (amount 10))
+  "Decreases the luminance of hex color HEX by AMOUNT."
+  (set-alpha hex (hsl->hex (hsl:darken (hex->hsl hex) amount))))
 
-(define* (saturate hex #:optional (percentage 10))
-  "Increases the saturation of hex color HEX by PERCENTAGE."
-  (set-alpha (hsl->hex (hsl:saturate (hex->hsl hex) percentage))))
+(define* (saturate hex #:optional (amount 10))
+  "Increases the saturation of hex color HEX by AMOUNT."
+  (set-alpha (hsl->hex (hsl:saturate (hex->hsl hex) amount))))
 
-(define* (desaturate hex #:optional (percentage 10))
-  "Decreases the saturation of hex color HEX by PERCENTAGE."
-  (set-alpha (hsl->hex (hsl:desaturate (hex->hsl hex) percentage))))
+(define* (desaturate hex #:optional (amount 10))
+  "Decreases the saturation of hex color HEX by AMOUNT."
+  (set-alpha (hsl->hex (hsl:desaturate (hex->hsl hex) amount))))
 
 (define* (with-filters hex filters)
   "Applies the filters in FILTERS to HEX. Only converts between color representations once, thus yielding better performance.
