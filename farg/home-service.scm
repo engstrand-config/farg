@@ -38,11 +38,16 @@
       ("GUIX_FARG_SATURATION" . ,saturation)
       ("GUIX_FARG_LIGHT" . ,(serialize-boolean backend)))))
 
+;; TODO: Move generated pywal files from /tmp/
 (define (home-farg-files-service config)
   '())
 
+(define (home-farg-activation-service config)
+  #~(begin
+      (display "Activating colorscheme...")
+      #$(farg-config-activation-commands config)))
+
 ;; TODO: Add pywal as a profile dependency?
-;; TODO: Allow execution of commands after reconfiguring.
 (define home-farg-service-type
   (service-type
    (name 'home-farg)
@@ -53,5 +58,8 @@
       home-farg-environment-variables-service)
      (service-extension
       home-files-service-type
-      home-farg-files-service)))
+      home-farg-files-service)
+     (service-extension
+      home-activation-service-type
+      home-farg-activation-service)))
    (description "Persist generated colorscheme.")))

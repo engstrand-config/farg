@@ -11,7 +11,8 @@
             farg-config-saturation
             farg-config-palette-getter
             farg-config-colors-directory
-            farg-config-wallpaper-path))
+            farg-config-wallpaper-path
+            farg-config-activation-commands))
 
 (define (maybe-palette-getter? proc)
   (or (eq? proc #f)
@@ -48,4 +49,8 @@ provide external applications with the generated colorscheme, e.g. pywalfox.")
    (maybe-string (or (getenv "XDG_CONFIG_HOME")
                      (string-append (getenv "HOME") "/.config")))
    "Path to save the current wallpaper set by @code{wallpaper}.")
+  (activation-commands
+   (list '())
+   "List of commands to run when the new home environment has been activated.
+This can be used to update currently running applications, e.g. pywalfox.")
   (no-serialization))
