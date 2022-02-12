@@ -9,7 +9,9 @@
             farg-config-backend
             farg-config-wallpaper
             farg-config-saturation
-            farg-config-palette-getter))
+            farg-config-palette-getter
+            farg-config-colors-directory
+            farg-config-wallpaper-path))
 
 (define (maybe-palette-getter? proc)
   (or (eq? proc #f)
@@ -36,4 +38,14 @@ the generated pywal colors as a list of index/color pairs. The return value
 of this procedure will be used to set the @code{(palette)} field of the
 final @code{colorscheme} record. This can be used to generate more shades
 of the pywal-generated colors.")
+  (colors-directory
+   (maybe-string (string-append (or (getenv "XDG_CACHE_HOME")
+                                    (string-append (getenv "HOME") "/.cache"))
+                                "/wal"))
+   "Directory to save the serialized contents of @code{colors} to. Can be used to
+provide external applications with the generated colorscheme, e.g. pywalfox.")
+  (wallpaper-path
+   (maybe-string (or (getenv "XDG_CONFIG_HOME")
+                     (string-append (getenv "HOME") "/.config")))
+   "Path to save the current wallpaper set by @code{wallpaper}.")
   (no-serialization))

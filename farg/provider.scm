@@ -48,29 +48,42 @@ colors from a generated colorscheme.
    "A list of themed system services.")
   (no-serialization))
 
+(define* (should-generate-colorscheme? config)
+  "Checks if a new colorscheme should be generated with pywal."
+  (let ((saved-wallpaper (getenv "GUIX_FARG_WALLPAPER"))
+        (saved-backend (getenv "GUIX_FARG_BACKEND"))
+        (saved-saturation (getenv "GUIX_FARG_SATURATION"))
+        (saved-light? (getenv "GUIX_FARG_LIGHT")))
+    (cond
+     ((not (eq? (farg-config-light? config) saved-light?)) #t)
+     ((not (eq? (farg-config-backend config) saved-backend)) #t)
+     ((not (eq? (farg-config-saturation config) saved-saturation)) #t)
+     ((not (eq? (farg-config-wallpaper config) saved-wallpaper)) #t)
+     (else #f))))
+
 (define* (colorscheme-provider
           #:key
           (config (farg-config))
           (home-services '())
           (system-services '()))
   "Provides a generated colorscheme to each service generator."
-
-  ;; Side-effect. Call pywal and generate colors.
-  (generate-colorscheme config)
-
-  ;; Convert generated colors into a colorscheme record.
   (define new-colorscheme
-    (colors->colorscheme (read-generated-colorscheme) config))
+    (colors->colorscheme
+     (if (should-generate-colorscheme? config)
+      ;; TODO: Should the temporary path be a configuration option?
+      (generate-colorscheme config "/tmp/farg")
+      (read-colorscheme (farg-config-colors-directory config)))
+     config))
 
   (define accessor (make-colorscheme-accessor new-colorscheme))
 
   (define (generate-services provider)
     (cond
      ((list? provider)
-      (if (every (lambda (x) (>= 1 (car (procedure-minimum-arity x))))
-                 provider)
-          (map (lambda (s) (s new-colorscheme accessor)) provider)
-          provider))
+      (map (lambda (s) (if (>= 1 (car (procedure-minimum-arity s)))
+                           (s new-colorscheme accessor)
+                           s))
+           provider))
      ((procedure? provider) (provider new-colorscheme accessor))
      (else provider)))
 
