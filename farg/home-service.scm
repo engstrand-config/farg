@@ -55,7 +55,7 @@
   `(,@(filter-map
        (lambda (f)
          (copy-exported-file
-          "/tmp/farg"
+          (farg-config-temporary-directory config)
           (remove-home-path-prefix (farg-config-colors-directory config))
           f))
        (farg-config-color-files config))))

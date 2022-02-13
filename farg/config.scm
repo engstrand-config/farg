@@ -10,6 +10,7 @@
             farg-config-wallpaper
             farg-config-saturation
             farg-config-palette-getter
+            farg-config-temporary-directory
             farg-config-colors-directory
             farg-config-wallpaper-path
             farg-config-activation-commands
@@ -40,6 +41,11 @@ the generated pywal colors as a list of index/color pairs. The return value
 of this procedure will be used to set the @code{(palette)} field of the
 final @code{colorscheme} record. This can be used to generate more shades
 of the pywal-generated colors.")
+  (temporary-directory
+   (string "/tmp/farg")
+   "Temporary directory for pywal files. All pywal generated files will be placed
+here to prevent polluting your home environment. To select files to export to
+your home environment, see @code{colors-files}.")
   (colors-directory
    (maybe-string (string-append (or (getenv "XDG_CACHE_HOME")
                                     (string-append (getenv "HOME") "/.cache"))

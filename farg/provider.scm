@@ -71,7 +71,7 @@ colors from a generated colorscheme.
     (colors->colorscheme
      (if (should-generate-colorscheme? config)
       ;; TODO: Should the temporary path be a configuration option?
-      (generate-colorscheme config "/tmp/farg")
+      (generate-colorscheme config (farg-config-temporary-directory config))
       (read-colorscheme (farg-config-colors-directory config)))
      config))
 
