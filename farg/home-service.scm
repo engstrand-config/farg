@@ -38,9 +38,27 @@
       ("GUIX_FARG_SATURATION" . ,saturation)
       ("GUIX_FARG_LIGHT" . ,(serialize-boolean backend)))))
 
-;; TODO: Move generated pywal files from /tmp/
+(define (remove-home-path-prefix path)
+  (if (and (eq? (string-contains path "/home/") 0)
+           (> (string-length path) 7))
+      (substring path (+ 1 (string-index path #\/ 6)))
+      path))
+
 (define (home-farg-files-service config)
-  '())
+  (define (copy-exported-file from-dir to-dir name)
+    (let ((out (string-append to-dir "/" name))
+          (in (string-append from-dir "/" name)))
+      (if (file-exists? in)
+          `(,out . ,(slurp-file-gexp (local-file in)))
+          #f)))
+
+  `(,@(filter-map
+       (lambda (f)
+         (copy-exported-file
+          "/tmp/farg"
+          (remove-home-path-prefix (farg-config-colors-directory config))
+          f))
+       (farg-config-color-files config))))
 
 (define (home-farg-activation-service config)
   #~(begin

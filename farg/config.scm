@@ -12,7 +12,8 @@
             farg-config-palette-getter
             farg-config-colors-directory
             farg-config-wallpaper-path
-            farg-config-activation-commands))
+            farg-config-activation-commands
+            farg-config-color-files))
 
 (define (maybe-palette-getter? proc)
   (or (eq? proc #f)
@@ -53,4 +54,12 @@ provide external applications with the generated colorscheme, e.g. pywalfox.")
    (list '())
    "List of commands to run when the new home environment has been activated.
 This can be used to update currently running applications, e.g. pywalfox.")
+  (color-files
+   (list-of-strings '("colors"))
+   "List of color files to export to @code{colors-directory}.
+By default, only the @file{colors} file will be exported. To export other files,
+specify the file name as a string. Non-existing files will be ignored.
+@example
+'(\"colors\" \"colors.json\" \"colors.css\")
+@end example")
   (no-serialization))
