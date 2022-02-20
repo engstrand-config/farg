@@ -1,6 +1,8 @@
 (define-module (farg config)
   #:use-module (farg utils)
+  #:use-module (farg picker)
   #:use-module (gnu services configuration)
+  #:use-module (gnu packages image-viewers)
   #:export (
             farg-config
             <farg-config>
@@ -14,7 +16,10 @@
             farg-config-colors-directory
             farg-config-wallpaper-path
             farg-config-activation-commands
-            farg-config-color-files))
+            farg-config-color-files
+            farg-config-wallpaper-search-directory
+            farg-config-wallpaper-picker-package
+            farg-config-wallpaper-picker))
 
 (define (maybe-palette-getter? proc)
   (or (eq? proc #f)
@@ -68,4 +73,17 @@ specify the file name as a string. Non-existing files will be ignored.
 @example
 '(\"colors\" \"colors.json\" \"colors.css\")
 @end example")
+  (wallpaper-search-directory
+   (maybe-string #f)
+   "Path to a directory with your wallpapers. This will be used by the wallpaper
+picker utility, allowing you to quickly choose a new wallpaper to generate
+a colorscheme for.")
+  (wallpaper-picker-package
+   (package sxiv)
+   "Package for the application to use for the wallpaper picker utility.
+The chosen package will be installed to your home environment.")
+  (wallpaper-picker
+   (procedure sxiv-wallpaper-picker)
+   "Procedure to call for picking a wallpaper. Should accept the config as
+argument, and return the full path to the selected wallpaper.")
   (no-serialization))
