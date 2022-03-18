@@ -1,12 +1,15 @@
 (define-module (farg config)
   #:use-module (farg utils)
   #:use-module (farg picker)
+  #:use-module (guix packages)
   #:use-module (gnu services configuration)
   #:use-module (gnu packages image-viewers)
   #:export (
             farg-config
             <farg-config>
             farg-config?
+            farg-config-fields
+
             farg-config-light?
             farg-config-backend
             farg-config-wallpaper
