@@ -1,4 +1,5 @@
 (define-module (farg home-service)
+  #:use-module (srfi srfi-1)
   #:use-module (guix gexp)
   #:use-module (gnu home services)
   #:use-module (gnu home services shells)
@@ -6,15 +7,22 @@
   #:use-module (farg utils)
   #:use-module (farg config)
   #:use-module (farg colorscheme)
-  #:export (home-farg-service-type))
+  #:export (
+            home-farg-service-type
+            home-farg-configuration
+            home-farg-configuration?
+            <home-farg-configuration>
+
+            home-farg-configuration-colorscheme
+            home-farg-configuration-config))
 
 (define-configuration
   home-farg-configuration
   (colorscheme
-   (colorscheme)
-   "The generated colorscheme.")
+   (colorscheme (colorscheme))
+   "The generated colorscheme")
   (config
-   (farg-config)
+   (farg-config (farg-config))
    "The farg configuration.")
   (no-serialization))
 
@@ -23,7 +31,8 @@
     (if str str ""))
 
   (define (serialize-boolean bool)
-    (if bool 1 0))
+    (number->string
+     (if bool 1 0)))
 
   (let* ((colorscheme (home-farg-configuration-colorscheme config))
          (farg (home-farg-configuration-config config))
@@ -35,7 +44,7 @@
     ;; these settings change. This will help speed up the reconfiguration.
     `(("GUIX_FARG_WALLPAPER" . ,(serialize-string wallpaper))
       ("GUIX_FARG_BACKEND" . ,(serialize-string backend))
-      ("GUIX_FARG_SATURATION" . ,saturation)
+      ("GUIX_FARG_SATURATION" . ,(number->string saturation))
       ("GUIX_FARG_LIGHT" . ,(serialize-boolean backend)))))
 
 (define (remove-home-path-prefix path)
@@ -52,18 +61,19 @@
           `(,out . ,(slurp-file-gexp (local-file in)))
           #f)))
 
-  `(,@(filter-map
-       (lambda (f)
-         (copy-exported-file
-          (farg-config-temporary-directory config)
-          (remove-home-path-prefix (farg-config-colors-directory config))
-          f))
-       (farg-config-color-files config))))
+  `(,@(let ((fconfig (home-farg-configuration-config config)))
+       (filter-map
+         (lambda (f)
+           (copy-exported-file
+            (farg-config-temporary-directory fconfig)
+            (remove-home-path-prefix (farg-config-colors-directory fconfig))
+            f))
+         (farg-config-color-files fconfig)))))
 
 (define (home-farg-activation-service config)
   #~(begin
-      (display "Activating colorscheme...")
-      #$(farg-config-activation-commands config)))
+      (display "Activating colorscheme...\n")
+      #$@(farg-config-activation-commands (home-farg-configuration-config config))))
 
 ;; TODO: Add pywal as a profile dependency?
 (define home-farg-service-type
@@ -80,4 +90,5 @@
      (service-extension
       home-activation-service-type
       home-farg-activation-service)))
+   (compose identity)
    (description "Persist generated colorscheme.")))

@@ -20,6 +20,8 @@
             colorscheme-background
             colorscheme-palette
 
+            maybe-colorscheme?
+
             hex->hsl
             hex->rgba
             hex->luminance
@@ -100,9 +102,9 @@
 @code{palette-getter} field of the @code{farg-config} record.")
   (no-serialization))
 
-;; TODO: Update XDG_CACHE_HOME during execution?
-;;       The generated colors can then be written as a file to the store
-;;       and symlinked to your ~/.cache/wal directory.
+(define (maybe-colorscheme? x)
+  (or (boolean? x) (colorscheme? x)))
+
 (define (generate-colorscheme config output-path)
   (begin
     (system
