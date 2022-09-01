@@ -91,4 +91,5 @@
       home-activation-service-type
       home-farg-activation-service)))
    (compose identity)
+   (default-value (home-farg-configuration))
    (description "Persist generated colorscheme.")))

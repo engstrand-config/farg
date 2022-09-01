@@ -4,14 +4,11 @@
   #:use-module (ice-9 exceptions)
   #:use-module (farg config)
   #:use-module (farg colorscheme)
+  #:use-module (farg home-service)
   #:use-module (gnu services configuration)
   #:export (
-            themed-services
-            <themed-services>
-            themed-services?
-            themed-services-home
-            themed-services-system
-            colorscheme-provider))
+            colorscheme-provider
+            make-colorscheme-accessor))
 
 (define* (make-colorscheme-accessor colorscheme)
   "Creates a helper procedure for quickly accessing base and palette
@@ -38,16 +35,6 @@ colors from a generated colorscheme.
                                 (symbol->string name)
                                 "' does not exist in your colorscheme.")))))))))
 
-(define-configuration
-  themed-services
-  (home
-   (list '())
-   "A list of themed home services.")
-  (system
-   (list '())
-   "A list of themed system services.")
-  (no-serialization))
-
 (define* (should-generate-colorscheme? config)
   "Checks if a new colorscheme should be generated with pywal."
   (let ((saved-wallpaper (getenv "GUIX_FARG_WALLPAPER"))
@@ -65,7 +52,7 @@ colors from a generated colorscheme.
           #:key
           (config (farg-config))
           (services '()))
-  "Provides a generated colorscheme to each service generator."
+  "Provides a generated colorscheme to each service in SERVICES."
   (define new-colorscheme
     (colors->colorscheme
      (if (should-generate-colorscheme? config)
@@ -84,7 +71,7 @@ colors from a generated colorscheme.
    ((list? services)
     (map (lambda (service)
            (let ((arity (procedure-minimum-arity service)))
-             (if (or (eq? arity #f) (< (car arity) 2))
+             (if (or (eq? arity #f) (not (eq? (car arity) 2)))
                  service
                  (service home-config palette))))
          services))
