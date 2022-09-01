@@ -74,7 +74,11 @@ colors from a generated colorscheme.
       (read-colorscheme (farg-config-colors-directory config)))
      config))
 
-  (define accessor (make-colorscheme-accessor new-colorscheme))
+  (define palette (make-colorscheme-accessor new-colorscheme))
+  (define home-config
+    (home-farg-configuration
+     (config config)
+     (colorscheme new-colorscheme)))
 
   (cond
    ((list? services)
@@ -82,7 +86,7 @@ colors from a generated colorscheme.
            (let ((arity (procedure-minimum-arity service)))
              (if (or (eq? arity #f) (< (car arity) 2))
                  service
-                 (service new-colorscheme accessor))))
+                 (service home-config palette))))
          services))
-   ((procedure? services) (services new-colorscheme accessor))
+   ((procedure? services) (services home-config palette))
    (else services)))
