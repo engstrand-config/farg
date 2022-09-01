@@ -58,7 +58,7 @@
     (let ((out (string-append to-dir "/" name))
           (in (string-append from-dir "/" name)))
       (if (file-exists? in)
-          `(,out . ,(slurp-file-gexp (local-file in)))
+          `(,out ,(local-file in))
           #f)))
 
   `(,@(let ((fconfig (home-farg-configuration-config config)))

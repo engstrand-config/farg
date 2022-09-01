@@ -64,8 +64,7 @@ colors from a generated colorscheme.
 (define* (colorscheme-provider
           #:key
           (config (farg-config))
-          (home-services '())
-          (system-services '()))
+          (services '()))
   "Provides a generated colorscheme to each service generator."
   (define new-colorscheme
     (colors->colorscheme
@@ -77,16 +76,13 @@ colors from a generated colorscheme.
 
   (define accessor (make-colorscheme-accessor new-colorscheme))
 
-  (define (generate-services provider)
-    (cond
-     ((list? provider)
-      (map (lambda (s) (if (>= 1 (car (procedure-minimum-arity s)))
-                           (s new-colorscheme accessor)
-                           s))
-           provider))
-     ((procedure? provider) (provider new-colorscheme accessor))
-     (else provider)))
-
-  (themed-services
-     (home (generate-services home-services))
-     (system (generate-services system-services))))
+  (cond
+   ((list? services)
+    (map (lambda (service)
+           (let ((arity (procedure-minimum-arity service)))
+             (if (or (eq? arity #f) (< (car arity) 2))
+                 service
+                 (service new-colorscheme accessor))))
+         services))
+   ((procedure? services) (services new-colorscheme accessor))
+   (else services)))
