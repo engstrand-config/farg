@@ -38,7 +38,7 @@
    "Colorscheme generator backend to use.")
   (wallpaper
    (maybe-string #f)
-   "Path for wallpaper to use in colorscheme generation.")
+   "Absolute path for wallpaper to use in colorscheme generation.")
   (saturation
    (number 1.0)
    "Colorscheme saturation.")

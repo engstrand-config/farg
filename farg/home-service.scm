@@ -27,13 +27,6 @@
   (no-serialization))
 
 (define (home-farg-environment-variables-service config)
-  (define (serialize-string str)
-    (if str str ""))
-
-  (define (serialize-boolean bool)
-    (number->string
-     (if bool 1 0)))
-
   (let* ((colorscheme (home-farg-configuration-colorscheme config))
          (farg (home-farg-configuration-config config))
          (wallpaper (colorscheme-wallpaper colorscheme))

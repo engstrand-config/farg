@@ -2,6 +2,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (ice-9 exceptions)
+  #:use-module (farg utils)
   #:use-module (farg config)
   #:use-module (farg colorscheme)
   #:use-module (farg home-service)
@@ -35,31 +36,42 @@ colors from a generated colorscheme.
                                 (symbol->string name)
                                 "' does not exist in your colorscheme.")))))))))
 
-(define* (should-generate-colorscheme? config)
-  "Checks if a new colorscheme should be generated with pywal."
-  (let ((saved-wallpaper (getenv "GUIX_FARG_WALLPAPER"))
-        (saved-backend (getenv "GUIX_FARG_BACKEND"))
-        (saved-saturation (getenv "GUIX_FARG_SATURATION"))
-        (saved-light? (getenv "GUIX_FARG_LIGHT")))
-    (cond
-     ((not (eq? (farg-config-light? config) saved-light?)) #t)
-     ((not (eq? (farg-config-backend config) saved-backend)) #t)
-     ((not (eq? (farg-config-saturation config) saved-saturation)) #t)
-     ((not (eq? (farg-config-wallpaper config) saved-wallpaper)) #t)
-     (else #f))))
-
 (define* (colorscheme-provider
           #:key
           (config (farg-config))
           (services '()))
   "Provides a generated colorscheme to each service in SERVICES."
+
+  (define colors
+    (let* ((wallpaper (farg-config-wallpaper config))
+           (colors-dir (farg-config-colors-directory config))
+           (previous-colors (string-append colors-dir "/colors")))
+      (if (or (eq? wallpaper #f)
+              (not (file-exists? wallpaper)))
+          (if (file-exists? previous-colors)
+              (read-colorscheme colors-dir)
+              ;; TODO: Add option for fallback colorscheme colors
+              ;; Fallback to some default colorscheme if none could be found
+              '((0 . "#121216")
+                (1 . "#1200f6")
+                (2 . "#ff967c")
+                (3 . "#6cadff")
+                (4 . "#80b6ff")
+                (5 . "#91c2fe")
+                (6 . "#99c4ff")
+                (7 . "#dadce0")
+                (8 . "#989a9c")
+                (9 . "#1200f6")
+                (10 . "#ff967c")
+                (11 . "#6cadff")
+                (12 . "#80b6ff")
+                (13 . "#91c2fe")
+                (14 . "#99c4ff")
+                (15 . "#dadce0")))
+          (generate-colorscheme config (farg-config-temporary-directory config)))))
+
   (define new-colorscheme
-    (colors->colorscheme
-     (if (should-generate-colorscheme? config)
-      ;; TODO: Should the temporary path be a configuration option?
-      (generate-colorscheme config (farg-config-temporary-directory config))
-      (read-colorscheme (farg-config-colors-directory config)))
-     config))
+    (colors->colorscheme colors config))
 
   (define palette (make-colorscheme-accessor new-colorscheme))
   (define home-config
