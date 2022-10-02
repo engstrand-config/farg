@@ -142,10 +142,10 @@
         (colorscheme
          (light? (farg-config-light? config))
          (wallpaper (farg-config-wallpaper config))
-         (primary (assoc-ref colors 3))
-         (secondary (assoc-ref colors 5))
+         (primary (assoc-ref colors 10))
+         (secondary (assoc-ref colors 13))
          (text (assoc-ref colors 15))
-         (background (assoc-ref colors 7))
+         (background (assoc-ref colors 0))
          (primary-text (assoc-ref colors 8))
          (secondary-text (assoc-ref colors 9)))
 
