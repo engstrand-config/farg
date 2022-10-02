@@ -43,6 +43,7 @@
             brighten
             saturate
             desaturate
+            offset
 
             hsl:lighten
             hsl:darken
@@ -364,11 +365,21 @@ and current saturation to PROC."
 
 (define* (saturate hex #:optional (amount 10))
   "Increases the saturation of hex color HEX by AMOUNT."
-  (set-alpha (hsl->hex (hsl:saturate (hex->hsl hex) amount))))
+  (set-alpha hex (hsl->hex (hsl:saturate (hex->hsl hex) amount))))
 
 (define* (desaturate hex #:optional (amount 10))
   "Decreases the saturation of hex color HEX by AMOUNT."
-  (set-alpha (hsl->hex (hsl:desaturate (hex->hsl hex) amount))))
+  (set-alpha hex (hsl->hex (hsl:desaturate (hex->hsl hex) amount))))
+
+(define* (offset hex #:optional (amount 10))
+  (let* ((hsl (hex->hsl hex))
+         (lum (caddr hsl)))
+    (set-alpha hex
+               (hsl->hex
+                ;; Check if color is bright or dark
+                (if (> lum 0.5)
+                    (hsl:darken hsl amount)
+                    (hsl:brighten hsl amount))))))
 
 (define* (with-filters hex filters)
   "Applies the filters in FILTERS to HEX. Only converts between color representations once, thus yielding better performance.
