@@ -6,5 +6,6 @@
 (define-public python-pywal-farg
   (package
    (inherit python-pywal)
+   (name "python-pywal-farg")
    (inputs '())
    (propagated-inputs (list imagemagick))))
