@@ -4,8 +4,10 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services shells)
   #:use-module (gnu services configuration)
+  #:use-module (gnu packages imagemagick)
   #:use-module (farg utils)
   #:use-module (farg config)
+  #:use-module (farg packages)
   #:use-module (farg colorscheme)
   #:export (
             home-farg-service-type
@@ -68,12 +70,18 @@
       (display "Activating colorscheme...\n")
       #$@(farg-config-activation-commands (home-farg-configuration-config config))))
 
-;; TODO: Add pywal as a profile dependency?
+(define (home-farg-profile-service config)
+  (list imagemagick
+        python-pywal-farg))
+
 (define home-farg-service-type
   (service-type
    (name 'home-farg)
    (extensions
     (list
+     (service-extension
+      home-profile-service-type
+      home-farg-profile-service)
      (service-extension
       home-environment-variables-service-type
       home-farg-environment-variables-service)

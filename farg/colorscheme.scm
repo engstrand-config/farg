@@ -113,10 +113,13 @@
 
 (define (generate-colorscheme config output-path)
   (begin
+    ;; HACK: Manually install wal if this is the first time you run farg
+    (unless (getenv "GUIX_FARG_WALLPAPER")
+      (system "guix install python-pywal-farg"))
     (system
      (string-join
       (list (string-append "PYWAL_CACHE_DIR=" output-path)
-            "$(guix build python-pywal-farg)/bin/wal"
+            "wal"
             "-i" (farg-config-wallpaper config)
             "--backend" (farg-config-backend config)
             "--saturate" (number->string (farg-config-saturation config))
@@ -124,6 +127,9 @@
             ;; Skip reloading
             "-e" "-t" "-s" "-n")
       " "))
+    ;; Remove again, since it is being added via the home service
+    (unless (getenv "GUIX_FARG_WALLPAPER")
+      (system "guix remove python-pywal-farg"))
     (read-colorscheme output-path)))
 
 (define* (read-colorscheme path)
