@@ -27,14 +27,18 @@ colors from a generated colorscheme.
       ('primary-text (colorscheme-primary-text colorscheme))
       ('secondary-text (colorscheme-secondary-text colorscheme))
       ('background (colorscheme-background colorscheme))
-      (_ (let ((color (assoc-ref (colorscheme-palette colorscheme) name)))
-           (if color
-               color
-               (raise-exception
-                (make-exception-with-message
-                 (string-append "farg: '"
-                                (symbol->string name)
-                                "' does not exist in your colorscheme.")))))))))
+      (_
+       (let* ((alist (if (number? name)
+                         (colorscheme-raw colorscheme)
+                         (colorscheme-palette colorscheme)))
+              (color (assoc-ref alist name)))
+         (if color
+             color
+             (raise-exception
+              (make-exception-with-message
+               (string-append "farg: '"
+                              (symbol->string name)
+                              "' does not exist in your colorscheme.")))))))))
 
 (define* (colorscheme-provider
           #:key
