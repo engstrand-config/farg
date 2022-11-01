@@ -119,7 +119,7 @@
     (system
      (string-join
       (list (string-append "PYWAL_CACHE_DIR=" output-path)
-            "wal"
+            "$(guix build python-pywal-farg)/bin/wal"
             "-i" (farg-config-wallpaper config)
             "--backend" (farg-config-backend config)
             "--saturate" (number->string (farg-config-saturation config))
