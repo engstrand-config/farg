@@ -13,6 +13,7 @@
             farg-config-light?
             farg-config-backend
             farg-config-wallpaper
+            farg-config-alpha
             farg-config-saturation
             farg-config-palette-getter
             farg-config-temporary-directory
@@ -39,9 +40,14 @@
   (wallpaper
    (maybe-string #f)
    "Absolute path for wallpaper to use in colorscheme generation.")
+  (alpha
+   (number-or-getter 1.0)
+   "Colorscheme transparency. If a procedure is provided, it will be called
+with the value of @code{light?} during colorscheme generation.")
   (saturation
-   (number 1.0)
-   "Colorscheme saturation.")
+   (number-or-getter 1.0)
+   "Colorscheme saturation. If a procedure is provided, it will be called
+with the value of @code{light?} during colorscheme generation.")
   (palette-getter
    (maybe-palette-getter #f)
    "Procedure that accepts two arguments, a @code{colorscheme} record and

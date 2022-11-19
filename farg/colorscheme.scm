@@ -11,6 +11,7 @@
             colorscheme
             <colorscheme>
             colorscheme?
+            colorscheme-alpha
             colorscheme-light?
             colorscheme-wallpaper
             colorscheme-text
@@ -75,6 +76,9 @@
 ;; TODO: Save wallpaper to store.
 (define-configuration
   colorscheme
+  (alpha
+   (number 1.0)
+   "Default transparency for the colorscheme (0-1).")
   (light?
    (boolean #f)
    "If the colorscheme is a light theme")
@@ -112,8 +116,16 @@
   (or (boolean? x) (colorscheme? x)))
 
 (define (generate-colorscheme config output-path)
+  (define colorscheme-saturation
+    (let ((saturation (farg-config-saturation config)))
+      (if (procedure? saturation)
+          (saturation (farg-config-light? config))
+          saturation)))
+
   (begin
-    ;; HACK: Manually install wal if this is the first time you run farg
+    ;; HACK: Manually install wal if this is the first time you run farg.
+    ;; This is not needed to get access to the wal binary, but rather to ensure
+    ;; that wal can access the imagemagick binary.
     (unless (getenv "GUIX_FARG_WALLPAPER")
       (system "guix install python-pywal-farg"))
     (system
@@ -122,9 +134,10 @@
             "$(guix build python-pywal-farg)/bin/wal"
             "-i" (farg-config-wallpaper config)
             "--backend" (farg-config-backend config)
-            "--saturate" (number->string (farg-config-saturation config))
+            "--saturate" (number->string colorscheme-saturation)
             (if (farg-config-light? config) "-l" "")
             ;; Skip reloading
+            ;; TODO: Add option for not skipping reloading
             "-e" "-t" "-s" "-n")
       " "))
     ;; Remove again, since it is being added via the home service
@@ -148,10 +161,17 @@
   "Converts a list of generated colors into a colorscheme record."
   ;; TODO: Correctly set primary and secondary text.
   ;; TODO: Generate extra color for light theme background
+  (define colorscheme-alpha
+    (let ((alpha (farg-config-alpha config)))
+      (if (procedure? alpha)
+          (alpha (farg-config-light? config))
+          alpha)))
+
   (define base-colorscheme
     (if (farg-config-light? config)
         ;; Light theme template
         (colorscheme
+         (alpha colorscheme-alpha)
          (light? (farg-config-light? config))
          (wallpaper (farg-config-wallpaper config))
          (primary (assoc-ref colors 10))
@@ -164,6 +184,7 @@
 
         ;; Dark theme template
         (colorscheme
+         (alpha colorscheme-alpha)
          (light? (farg-config-light? config))
          (wallpaper (farg-config-wallpaper config))
          (primary (assoc-ref colors 10))
