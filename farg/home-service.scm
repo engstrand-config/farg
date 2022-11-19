@@ -1,4 +1,5 @@
 (define-module (farg home-service)
+  #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
   #:use-module (guix gexp)
   #:use-module (gnu home services)
@@ -16,7 +17,9 @@
             <home-farg-configuration>
 
             home-farg-configuration-colorscheme
-            home-farg-configuration-config))
+            home-farg-configuration-config
+
+            modify-farg-config))
 
 (define-configuration
   home-farg-configuration
@@ -74,6 +77,18 @@
   (list imagemagick
         python-pywal-farg))
 
+(define (home-farg-extension old-config extend-proc)
+  (extend-proc old-config))
+
+(define-syntax modify-farg-config
+  (syntax-rules (=>)
+    ((_ (param => new-config))
+     (lambda (old-config)
+       (let ((param (home-farg-configuration-config old-config)))
+         (home-farg-configuration
+          (inherit old-config)
+          (config new-config)))))))
+
 (define home-farg-service-type
   (service-type
    (name 'home-farg)
@@ -91,6 +106,21 @@
      (service-extension
       home-activation-service-type
       home-farg-activation-service)))
-   (compose identity)
+   ;; Each extension will override the previous config
+   ;; with its own, generally by inheriting the old config
+   ;; and then adding their own updated values.
+   ;;
+   ;; Composing the extensions is done by creating a new procedure
+   ;; that accepts the service configuration and then recursively
+   ;; call each extension procedure with the result of the previous extension.
+   (compose (lambda (extensions)
+              (match extensions
+                (() identity)
+                ((procs ...)
+                 (lambda (old-config)
+                   (fold-right (lambda (p extended-config) (p extended-config))
+                               old-config
+                               extensions))))))
+   (extend home-farg-extension)
    (default-value (home-farg-configuration))
    (description "Persist generated colorscheme.")))
