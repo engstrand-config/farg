@@ -38,9 +38,16 @@
          (backend (farg-config-backend farg))
          (saturation (farg-config-saturation farg))
          (light? (farg-config-light? farg)))
-    ;; Save pywal settings to make sure that we only re-generate colors if
-    ;; these settings change. This will help speed up the reconfiguration.
-    `(("GUIX_FARG_WALLPAPER" . ,(serialize-string wallpaper))
+    `(
+      ;; Make guix aware of `guix colorscheme` after first reconfigure.
+      ;; Potentially dangerous "fix", it makes possible for malicious channel
+      ;; expose it's own guix subcommands.
+      ("GUILE_LOAD_PATH" . "$XDG_CONFIG_HOME/guix/current/share/guile/site/3.0:$GUILE_LOAD_PATH")
+      ("GUILE_LOAD_COMPILED_PATH" . "$XDG_CONFIG_HOME/guix/current/lib/guile/3.0/site-ccache:$GUILE_LOAD_COMPILED_PATH")
+
+      ;; Save pywal settings to make sure that we only re-generate colors if
+      ;; these settings change. This will help speed up the reconfiguration.
+      ("GUIX_FARG_WALLPAPER" . ,(serialize-string wallpaper))
       ("GUIX_FARG_BACKEND" . ,(serialize-string backend))
       ("GUIX_FARG_SATURATION" . ,(number->string saturation))
       ("GUIX_FARG_LIGHT" . ,(serialize-boolean light?)))))
