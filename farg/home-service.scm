@@ -43,7 +43,7 @@
     `(("GUIX_FARG_WALLPAPER" . ,(serialize-string wallpaper))
       ("GUIX_FARG_BACKEND" . ,(serialize-string backend))
       ("GUIX_FARG_SATURATION" . ,(number->string saturation))
-      ("GUIX_FARG_LIGHT" . ,(serialize-boolean backend)))))
+      ("GUIX_FARG_LIGHT" . ,(serialize-boolean light?)))))
 
 (define (remove-home-path-prefix path)
   (if (and (eq? (string-contains path "/home/") 0)
