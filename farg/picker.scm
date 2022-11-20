@@ -33,6 +33,5 @@
             (match-let* (((pid) pids)
                          ((_ . status) (waitpid pid)))
               (when (zero? (status:exit-val status))
-                (if (eof? chosen-wallpaper)
-                    (display "No wallpaper chosen, skipping...")
-                    (display (format #f "Using wallpaper: '~a'..." chosen-wallpaper))))))))))
+                (unless (eof-object? chosen-wallpaper)
+                    (display chosen-wallpaper)))))))))

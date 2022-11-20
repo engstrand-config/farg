@@ -7,6 +7,8 @@
   #:use-module (guix i18n)
   #:use-module (guix diagnostics)
   #:use-module (guix read-print)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (srfi srfi-37)
@@ -67,7 +69,16 @@ Manage your system colorscheme with farg according to ACTION.\n"))
 ;;;
 
 (define* (wallpaper-picker)
-  (display (G_ "picker\n")))
+  (let* ((xdg-config-path (getenv "XDG_CONFIG_HOME"))
+         (base-dir
+          (if (not xdg-config-path)
+              (string-append (getenv "HOME") "/.config")
+              xdg-config-path))
+         (executable (string-append base-dir "/farg/picker.scm"))
+         (port (open-input-pipe executable))
+         (result (read-line port)))
+    (display (G_ "Opening wallpaper picker...\n"))
+    (display result)))
 
 (define* (update-colorscheme-mode command light)
   (let ((current-mode (getenv "GUIX_FARG_LIGHT")))
