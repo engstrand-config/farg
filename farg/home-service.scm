@@ -7,6 +7,7 @@
   #:use-module (gnu services configuration)
   #:use-module (gnu packages imagemagick)
   #:use-module (farg utils)
+  #:use-module (farg picker)
   #:use-module (farg config)
   #:use-module (farg packages)
   #:use-module (farg colorscheme)
@@ -66,14 +67,18 @@
           `(,out ,(local-file in))
           #f)))
 
-  `(,@(let ((fconfig (home-farg-configuration-config config)))
-       (filter-map
+  (let* ((fconfig (home-farg-configuration-config config))
+         (wallpaper-path (farg-config-wallpaper-search-directory fconfig)))
+    `(,@(filter-map
          (lambda (f)
            (copy-exported-file
             (farg-config-temporary-directory fconfig)
             (remove-home-path-prefix (farg-config-colors-directory fconfig))
             f))
-         (farg-config-color-files fconfig)))))
+         (farg-config-color-files fconfig))
+      (".config/farg/picker.scm"
+       ,(program-file "farg-picker.scm"
+                        (sxiv-wallpaper-picker wallpaper-path))))))
 
 (define (home-farg-activation-service config)
   #~(begin
