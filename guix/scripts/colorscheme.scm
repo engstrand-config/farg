@@ -42,7 +42,6 @@ Manage your system colorscheme with farg according to ACTION.\n"))
   -h, --help             display this help and exit")))
 
 (define-command (guix-colorscheme . args)
-  (category extension)
   (synopsis "update your system colorscheme")
 
   (define (handle-argument arg result arg-handler)
