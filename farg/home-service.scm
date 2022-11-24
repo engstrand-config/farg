@@ -86,8 +86,7 @@
       #$@(farg-config-activation-commands (home-farg-configuration-config config))))
 
 (define (home-farg-profile-service config)
-  (list imagemagick
-        python-pywal-farg))
+  (list python-pywal-farg))
 
 (define (home-farg-extension old-config extend-proc)
   (extend-proc old-config))
