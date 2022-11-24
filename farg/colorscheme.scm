@@ -123,10 +123,12 @@
           saturation)))
 
   (begin
+    (let ((home-service-activated? (getenv "GUIX_FARG_WALLPAPER"))
+          (is-root? (equal? (geteuid) 0)))
     ;; HACK: Manually install wal if this is the first time you run farg.
     ;; This is not needed to get access to the wal binary, but rather to ensure
     ;; that wal can access the imagemagick binary.
-    (unless (getenv "GUIX_FARG_WALLPAPER")
+    (when (and (not home-service-activated?) (not is-root?))
       (system "guix install python-pywal-farg"))
     (system
      (string-join
@@ -141,9 +143,9 @@
             "-e" "-t" "-s" "-n")
       " "))
     ;; Remove again, since it is being added via the home service
-    (unless (getenv "GUIX_FARG_WALLPAPER")
+    (when (and (not home-service-activated?) (not is-root?))
       (system "guix remove python-pywal-farg"))
-    (read-colorscheme output-path)))
+    (read-colorscheme output-path))))
 
 (define* (read-colorscheme path)
   "Read generated colors from PATH."
