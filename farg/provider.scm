@@ -21,6 +21,7 @@ colors from a generated colorscheme.
 @end example"
   (lambda (name)
     (match name
+      ('alpha (colorscheme-alpha colorscheme))
       ('primary (colorscheme-primary colorscheme))
       ('secondary (colorscheme-secondary colorscheme))
       ('text (colorscheme-text colorscheme))
