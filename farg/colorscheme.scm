@@ -417,6 +417,20 @@ and current saturation to PROC."
                     (hsl:darken hsl amount)
                     (hsl:brighten hsl amount))))))
 
+(define* (blend source backdrop #:optional (percentage 0.9))
+  "Blends SOURCE with percentage PERCENTAGE with BACKDROP.
+Setting PERCENTAGE >= 1.0 will return SOURCE, and PERCENTAGE = 0 will return BACKDROP."
+  (let* ((source-rgb (hex->rgba source))
+         (backdrop-rgb (hex->rgba backdrop))
+         (mR (- (car backdrop-rgb) (car source-rgb)))
+         (mG (- (cadr backdrop-rgb) (cadr source-rgb)))
+         (mB (- (caddr backdrop-rgb) (caddr source-rgb))))
+    (set-alpha source
+               (rgba->hex
+                `(,(+ (* mR (- 1 percentage)) (car source-rgb))
+                  ,(+ (* mG (- 1 percentage)) (cadr source-rgb))
+                  ,(+ (* mB (- 1 percentage)) (caddr source-rgb)))))))
+
 (define* (with-filters hex filters)
   "Applies the filters in FILTERS to HEX. Only converts between color representations once, thus yielding better performance.
 @example
