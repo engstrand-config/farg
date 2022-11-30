@@ -47,6 +47,7 @@
             saturate
             desaturate
             offset
+            blend
 
             hsl:lighten
             hsl:darken
