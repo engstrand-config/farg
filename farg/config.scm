@@ -27,7 +27,8 @@
 
 (define (maybe-palette-getter? proc)
   (or (eq? proc #f)
-      (eq? (car (procedure-minimum-arity proc)) 2)))
+      (and (procedure? proc)
+           (eq? (car (procedure-minimum-arity proc)) 1))))
 
 (define-configuration
   farg-config
@@ -50,11 +51,11 @@ with the value of @code{light?} during colorscheme generation.")
 with the value of @code{light?} during colorscheme generation.")
   (palette-getter
    (maybe-palette-getter #f)
-   "Procedure that accepts two arguments, a @code{colorscheme} record and
-the generated pywal colors as a list of index/color pairs. The return value
-of this procedure will be used to set the @code{(palette)} field of the
-final @code{colorscheme} record. This can be used to generate more shades
-of the pywal-generated colors.")
+   "Procedure that accepts the default palette as argument and returns
+a new procedure that accepts a single value and returns a color, or throws
+an exception. If this value is set, you most likely want to call the default
+palette with the input argument as a fallback. This can be used to generate
+more shades of the pywal-generated colors in order to improve performance.")
   (temporary-directory
    (string "/tmp/farg")
    "Temporary directory for pywal files. All pywal generated files will be placed

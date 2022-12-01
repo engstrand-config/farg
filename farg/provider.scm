@@ -78,7 +78,13 @@ colors from a generated colorscheme.
   (define new-colorscheme
     (colors->colorscheme colors config))
 
-  (define palette (make-colorscheme-accessor new-colorscheme))
+  (define palette
+    (let ((custom-getter (farg-config-palette-getter config))
+          (default-palette (make-colorscheme-accessor new-colorscheme)))
+      (if (procedure? custom-getter)
+          (custom-getter default-palette)
+          default-palette)))
+
   (define home-config
     (home-farg-configuration
      (config config)
