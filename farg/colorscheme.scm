@@ -28,6 +28,7 @@
             hex->hsl
             hex->rgba
             hex->luminance
+            rgba->luminance
             rgba->hex
             rgba->hsl
             hsl->hex
@@ -36,10 +37,9 @@
             set-alpha
             with-alpha
             with-filters
-            contrast
             adjust-hue
             adjust-saturation
-            adjust-luminance
+            adjust-lightness
 
             lighten
             darken
@@ -48,7 +48,12 @@
             desaturate
             offset
             blend
+            make-readable
+            contrast
 
+            rgba:contrast
+
+            hsl:contrast
             hsl:lighten
             hsl:darken
             hsl:brighten
@@ -249,9 +254,20 @@ Conversion of black and white will result in a hue of 0% (undefined)."
 ;; Based on formula at https://www.myndex.com/WEB/LuminanceContrast.
 (define* (hex->luminance hex)
   "Calculates the luminance of hex color HEX."
-  (apply + (map (lambda (pair) (* (car pair) (expt (cadr pair) 2.2)))
-                (zip '(0.2126 0.7152 0.0722)
-                     (hex->rgba hex)))))
+  (rgba->luminance (hex->rgba hex)))
+
+(define* (rgba->luminance color)
+  "Calculates the luminance of COLOR in rgba format."
+  (define (calc pair)
+    (let ((value (cadr pair)))
+      (* (car pair)
+         ;; FIXME: Some colors, e.g. #00FF00 or #0000FF will yield complex numbers.
+         ;; Not sure how to fix, so just replace it with 0 and be done with it.
+         (if (> (imag-part value) 0)
+             0
+             (expt value 2.2)))))
+
+  (apply + (map calc (zip '(0.2126 0.7152 0.0722) color))))
 
 (define* (rgba->hex rgba #:key (alpha? #f))
   "Converts RGBA into its hex color representation."
@@ -337,8 +353,18 @@ Conversion of black and white will result in a hue of 0% (undefined)."
 ;; Based on https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el.
 (define* (contrast c1 c2)
   "Calculates the WCAG contrast ratio between the hex colors C1 and C2."
-  (let ((ct (/ (+ (hex->luminance c1) 0.05)
-               (+ (hex->luminance c2) 0.05))))
+  (rgba:contrast (hex->rgba c1)
+                 (hex->rgba c2)))
+
+(define (hsl:contrast c1 c2)
+  "Calculates the WCAG contrast ratio between the HSL colors C1 and C2."
+  (rgba:contrast (hsl->rgba c1)
+                 (hsl->rgba c2)))
+
+(define (rgba:contrast c1 c2)
+  "Calculates the WCAG contrast ratio between the RGBA colors C1 and C2."
+  (let ((ct (/ (+ (rgba->luminance c1) 0.05)
+               (+ (rgba->luminance c2) 0.05))))
     (max ct (/ ct))))
 
 (define* (bounded lower upper value)
@@ -346,9 +372,9 @@ Conversion of black and white will result in a hue of 0% (undefined)."
   (min upper (max lower value)))
 
 ;; TODO: Combine adjust-* procedures into one.
-(define* (adjust-luminance hsl amount proc)
-  "Adjusts the luminance of HSL by applying AMOUNT
-and current luminance to PROC."
+(define* (adjust-lightness hsl amount proc)
+  "Adjusts the lightness of HSL by applying AMOUNT
+and current lightness to PROC."
   `(,(car hsl)
     ,(cadr hsl)
     ,(bounded 0.0 1.0 (proc (caddr hsl)
@@ -374,10 +400,10 @@ and current saturation to PROC."
                   (hsl->rgba hsl))))
 
 (define* (hsl:lighten hsl amount)
-  (adjust-luminance hsl amount +))
+  (adjust-lightness hsl amount +))
 
 (define* (hsl:darken hsl amount)
-  (adjust-luminance hsl amount -))
+  (adjust-lightness hsl amount -))
 
 (define* (hsl:saturate hsl amount)
   (adjust-saturation hsl amount +))
@@ -393,11 +419,11 @@ and current saturation to PROC."
                    (hex->rgba hex)))))
 
 (define* (lighten hex #:optional (amount 10))
-  "Increases the luminance of hex color HEX by AMOUNT."
+  "Increases the lightness of hex color HEX by AMOUNT."
   (set-alpha hex (hsl->hex (hsl:lighten (hex->hsl hex) amount))))
 
 (define* (darken hex #:optional (amount 10))
-  "Decreases the luminance of hex color HEX by AMOUNT."
+  "Decreases the lightness of hex color HEX by AMOUNT."
   (set-alpha hex (hsl->hex (hsl:darken (hex->hsl hex) amount))))
 
 (define* (saturate hex #:optional (amount 10))
@@ -431,6 +457,26 @@ Setting PERCENTAGE >= 1.0 will return SOURCE, and PERCENTAGE = 0 will return BAC
                 `(,(+ (* mR (- 1 percentage)) (car source-rgb))
                   ,(+ (* mG (- 1 percentage)) (cadr source-rgb))
                   ,(+ (* mB (- 1 percentage)) (caddr source-rgb)))))))
+
+(define* (make-readable fg bg #:optional (ratio 7))
+  "Calculates a new color based on hex color FG that has a contrast ratio
+of RATIO to the hex color BG."
+  (define step 5) ;; 5% lightness change per iteration
+  (define bg-hsl (hex->hsl bg))
+  (define bg-light? (> (caddr bg-hsl) 0.5))
+
+  (define (find-readable-color hsl)
+    (let* ((fg-lightness (caddr hsl)))
+      (if (or (>= fg-lightness 0.95)
+              (<= fg-lightness 0.05)
+              (>= (hsl:contrast hsl bg-hsl) ratio))
+          hsl
+          (find-readable-color (if bg-light?
+                                   (hsl:darken hsl step)
+                                   (hsl:lighten hsl step))))))
+
+  (set-alpha fg
+             (hsl->hex (find-readable-color (hex->hsl fg)))))
 
 (define* (with-filters hex filters)
   "Applies the filters in FILTERS to HEX. Only converts between color representations once, thus yielding better performance.
