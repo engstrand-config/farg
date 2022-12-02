@@ -170,32 +170,19 @@
           (alpha (farg-config-light? config))
           alpha)))
 
-  (if (farg-config-light? config)
-      ;; Light theme template
-      (colorscheme
-       (alpha colorscheme-alpha)
-       (light? (farg-config-light? config))
-       (wallpaper (farg-config-wallpaper config))
-       (primary (assoc-ref colors 10))
-       (secondary (assoc-ref colors 13))
-       (text (assoc-ref colors 15))
-       (background (assoc-ref colors 0))
-       (primary-text (assoc-ref colors 8))
-       (secondary-text (assoc-ref colors 9))
-       (raw colors))
-
-      ;; Dark theme template
-      (colorscheme
-       (alpha colorscheme-alpha)
-       (light? (farg-config-light? config))
-       (wallpaper (farg-config-wallpaper config))
-       (primary (assoc-ref colors 10))
-       (secondary (assoc-ref colors 13))
-       (text (assoc-ref colors 15))
-       (background (assoc-ref colors 0))
-       (primary-text (assoc-ref colors 8))
-       (secondary-text (assoc-ref colors 9))
-       (raw colors))))
+  (let ((primary (assoc-ref colors 8))
+         (secondary (assoc-ref colors 9)))
+    (colorscheme
+     (alpha colorscheme-alpha)
+     (light? (farg-config-light? config))
+     (wallpaper (farg-config-wallpaper config))
+     (primary (assoc-ref colors 10))
+     (secondary (assoc-ref colors 13))
+     (text (assoc-ref colors 15))
+     (background (assoc-ref colors 0))
+     (primary-text (make-readable primary primary))
+     (secondary-text (make-readable secondary secondary))
+     (raw colors))))
 
 (define* (set-alpha prev new)
   "Mirrors the alpha channel of PREV to NEW. If NEW has an alpha
@@ -352,7 +339,9 @@ Conversion of black and white will result in a hue of 0% (undefined)."
   "Calculates the WCAG contrast ratio between the RGBA colors C1 and C2."
   (let ((ct (/ (+ (rgba->luminance c1) 0.05)
                (+ (rgba->luminance c2) 0.05))))
-    (max ct (/ ct))))
+    (if (> (imag-part ct) 0)
+        0
+        (max ct (/ ct)))))
 
 (define* (bounded lower upper value)
   "Bounds VALUE between LOWER and UPPER."
