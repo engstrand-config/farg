@@ -170,8 +170,9 @@
           (alpha (farg-config-light? config))
           alpha)))
 
-  (let ((primary (assoc-ref colors 8))
-         (secondary (assoc-ref colors 9)))
+  (let ((background (assoc-ref colors 0))
+        (primary (assoc-ref colors 8))
+        (secondary (assoc-ref colors 9)))
     (colorscheme
      (alpha colorscheme-alpha)
      (light? (farg-config-light? config))
@@ -179,9 +180,9 @@
      (primary (assoc-ref colors 10))
      (secondary (assoc-ref colors 13))
      (text (assoc-ref colors 15))
-     (background (assoc-ref colors 0))
-     (primary-text (make-readable primary primary))
-     (secondary-text (make-readable secondary secondary))
+     (background background)
+     (primary-text (make-readable primary background))
+     (secondary-text (make-readable secondary background))
      (raw colors))))
 
 (define* (set-alpha prev new)
