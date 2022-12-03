@@ -19,6 +19,15 @@ colors from a generated colorscheme.
 (palette 'background) ;; returns the color in background field of colorscheme
 (palette 'my-custom-palette-color) ;; returns color from palette alist
 @end example"
+  (define (throw-invalid-name name)
+    (raise-exception
+     (make-exception-with-message
+      (string-append "farg: '"
+                     (if (symbol? name)
+                         (symbol->string name)
+                         (number->string name))
+                     "' does not exist in your palette."))))
+
   (lambda (name)
     (match name
       ('alpha (colorscheme-alpha colorscheme))
@@ -29,17 +38,12 @@ colors from a generated colorscheme.
       ('secondary-text (colorscheme-secondary-text colorscheme))
       ('background (colorscheme-background colorscheme))
       (_
-       (let* ((alist (if (number? name)
-                         (colorscheme-raw colorscheme)
-                         (colorscheme-palette colorscheme)))
-              (color (assoc-ref alist name)))
-         (if color
-             color
-             (raise-exception
-              (make-exception-with-message
-               (string-append "farg: '"
-                              (symbol->string name)
-                              "' does not exist in your colorscheme.")))))))))
+       (if (number? name)
+           (let* ((color (assoc-ref (colorscheme-raw colorscheme) name)))
+             (if color
+                 color
+                 (throw-invalid-name name)))
+           (throw-invalid-name name))))))
 
 (define* (colorscheme-provider
           #:key
