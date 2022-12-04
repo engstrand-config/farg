@@ -6,6 +6,7 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
+  #:use-module (ice-9 exceptions)
   #:use-module (gnu services configuration)
   #:export (
             colorscheme
@@ -213,13 +214,20 @@ If the hex color does not specify the alpha, it will default to 100%."
          (cons (exact->inexact (/ (string->number (string-take hex 2) 16) 255)) acc)
          (string-drop hex 2))))
 
-  (let* ((hex (substring str 1))
-         (rgb (split-rgb '() hex))
-         (has-alpha? (eq? (length rgb) 4)))
-    (reverse
-     (if alpha?
-         (if has-alpha? (cons 1.0 rgb) rgb)
-         (if has-alpha? (list-tail rgb 1) rgb)))))
+  (if (or (not (string? str))
+          (eq? (string-length str) 0))
+    (raise-exception
+     (make-exception-with-message
+      (string-append "farg: '" str "' is not a valid hex color.")))
+    (let* ((hex (if (equal? (string-take str 1) "#")
+                    (substring str 1)
+                    str))
+           (rgb (split-rgb '() hex))
+           (has-alpha? (eq? (length rgb) 4)))
+      (reverse
+       (if alpha?
+           (if has-alpha? (cons 1.0 rgb) rgb)
+           (if has-alpha? (list-tail rgb 1) rgb))))))
 
 (define* (hex->hsl hex)
   "Converts a hex color HEX into its HSL color representation.
