@@ -132,6 +132,7 @@
     ;; that wal can access the imagemagick binary.
     (when (and (not home-service-activated?) (not is-root?))
       (system "guix install python-pywal-farg"))
+    (display "Generating colorscheme...\n")
     (system
      (string-join
       (list (string-append "PYWAL_CACHE_DIR=" output-path)
@@ -142,7 +143,9 @@
             (if (farg-config-light? config) "-l" "")
             ;; Skip reloading
             ;; TODO: Add option for not skipping reloading
-            "-e" "-t" "-s" "-n")
+            "-e" "-t" "-s" "-n"
+            ;; Disable output
+            "-q")
       " "))
     ;; Remove again, since it is being added via the home service
     (when (and (not home-service-activated?) (not is-root?))
