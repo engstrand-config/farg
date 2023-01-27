@@ -23,3 +23,13 @@
   (or (number? x)
       (and (procedure? x)
            (>= (car (procedure-minimum-arity x)) 1))))
+
+(define-public (wallpaper-or-getter? x)
+  (or (or (string? x) (eq? x #f))
+      (and (procedure? x)
+           (>= (car (procedure-minimum-arity x)) 1))))
+
+(define-public (maybe-palette-getter? proc)
+  (or (eq? proc #f)
+      (and (procedure? proc)
+           (eq? (car (procedure-minimum-arity proc)) 1))))

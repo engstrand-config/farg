@@ -25,11 +25,6 @@
             farg-config-wallpaper-picker-package
             farg-config-wallpaper-picker))
 
-(define (maybe-palette-getter? proc)
-  (or (eq? proc #f)
-      (and (procedure? proc)
-           (eq? (car (procedure-minimum-arity proc)) 1))))
-
 (define-configuration
   farg-config
   (light?
@@ -39,7 +34,7 @@
    (string "wal")
    "Colorscheme generator backend to use.")
   (wallpaper
-   (maybe-string #f)
+   (wallpaper-or-getter #f)
    "Absolute path for wallpaper to use in colorscheme generation.")
   (alpha
    (number-or-getter 1.0)

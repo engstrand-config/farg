@@ -117,7 +117,7 @@
 (define (maybe-colorscheme? x)
   (or (boolean? x) (colorscheme? x)))
 
-(define (generate-colorscheme config output-path)
+(define (generate-colorscheme wallpaper config output-path)
   (define colorscheme-saturation
     (let ((saturation (farg-config-saturation config)))
       (if (procedure? saturation)
@@ -137,7 +137,7 @@
      (string-join
       (list (string-append "PYWAL_CACHE_DIR=" output-path)
             "$(guix build python-pywal-farg)/bin/wal"
-            "-i" (farg-config-wallpaper config)
+            "-i" wallpaper
             "--backend" (farg-config-backend config)
             "--saturate" (number->string colorscheme-saturation)
             (if (farg-config-light? config) "-l" "")
@@ -164,7 +164,7 @@
 
   (read-colors (open-input-file (string-append path "/colors")) '() 0))
 
-(define* (colors->colorscheme colors config)
+(define* (colors->colorscheme wallpaper colors config)
   "Converts a list of generated colors into a colorscheme record."
   ;; TODO: Correctly set primary and secondary text.
   ;; TODO: Generate extra color for light theme background
@@ -180,7 +180,7 @@
     (colorscheme
      (alpha colorscheme-alpha)
      (light? (farg-config-light? config))
-     (wallpaper (farg-config-wallpaper config))
+     (wallpaper wallpaper)
      (primary (assoc-ref colors 10))
      (secondary (assoc-ref colors 13))
      (text (assoc-ref colors 15))

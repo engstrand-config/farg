@@ -51,9 +51,14 @@ colors from a generated colorscheme.
           (services '()))
   "Provides a generated colorscheme to each service in SERVICES."
 
+  (define wallpaper
+    (let ((getter (farg-config-wallpaper config)))
+      (if (procedure? getter)
+          (getter (farg-config-light? config))
+          getter)))
+
   (define colors
-    (let* ((wallpaper (farg-config-wallpaper config))
-           (colors-dir (farg-config-colors-directory config))
+    (let* ((colors-dir (farg-config-colors-directory config))
            (previous-colors (string-append colors-dir "/colors")))
       (if (or (eq? wallpaper #f)
               (not (file-exists? wallpaper)))
@@ -77,10 +82,10 @@ colors from a generated colorscheme.
                 (13 . "#91c2fe")
                 (14 . "#99c4ff")
                 (15 . "#dadce0")))
-          (generate-colorscheme config (farg-config-temporary-directory config)))))
+          (generate-colorscheme wallpaper config (farg-config-temporary-directory config)))))
 
   (define new-colorscheme
-    (colors->colorscheme colors config))
+    (colors->colorscheme wallpaper colors config))
 
   (define palette
     (let ((custom-getter (farg-config-palette-getter config))
