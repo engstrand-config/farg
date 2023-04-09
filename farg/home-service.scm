@@ -18,9 +18,7 @@
             <home-farg-configuration>
 
             home-farg-configuration-colorscheme
-            home-farg-configuration-config
-
-            modify-farg-config))
+            home-farg-configuration-config)
 
 (define-configuration
   home-farg-configuration
@@ -39,14 +37,7 @@
          (backend (farg-config-backend farg))
          (saturation (farg-config-saturation farg))
          (light? (farg-config-light? farg)))
-    `(
-      ;; Make guix aware of `guix colorscheme` after first reconfigure.
-      ;; Potentially dangerous "fix", it makes possible for malicious channel
-      ;; expose it's own guix subcommands.
-      ("GUILE_LOAD_PATH" . "$XDG_CONFIG_HOME/guix/current/share/guile/site/3.0:$GUILE_LOAD_PATH")
-      ("GUILE_LOAD_COMPILED_PATH" . "$XDG_CONFIG_HOME/guix/current/lib/guile/3.0/site-ccache:$GUILE_LOAD_COMPILED_PATH")
-
-      ;; Save pywal settings to make sure that we only re-generate colors if
+    `(;; Save pywal settings to make sure that we only re-generate colors if
       ;; these settings change. This will help speed up the reconfiguration.
       ("GUIX_FARG_WALLPAPER" . ,(serialize-string wallpaper))
       ("GUIX_FARG_BACKEND" . ,(serialize-string backend))
@@ -60,13 +51,6 @@
       path))
 
 (define (home-farg-files-service config)
-  (define (copy-exported-file from-dir to-dir name)
-    (let ((out (string-append to-dir "/" name))
-          (in (string-append from-dir "/" name)))
-      (if (file-exists? in)
-          `(,out ,(local-file in))
-          #f)))
-
   (let* ((fconfig (home-farg-configuration-config config))
          (wallpaper-path (farg-config-wallpaper-search-directory fconfig)))
     `(,@(filter-map
