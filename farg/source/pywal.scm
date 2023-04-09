@@ -55,7 +55,7 @@ needed."
         (begin
           (when (and (not home-service-activated?) (not is-root?))
             (system "guix install python-pywal-farg"))
-          (display "Generating farg theme using pywal...\n")
+          (display "\nGenerating farg theme using pywal...\n")
           (system
            (string-join
             (list (string-append "PYWAL_CACHE_DIR=" pywal-cache-path)
@@ -67,6 +67,7 @@ needed."
                   "-e" "-t" "-s" "-n"
                   "-q")
             " "))
+          (display "Pywal generation finished.\n\n")
           ;; Remove again, since it is being added via the home service
           (when (and (not home-service-activated?) (not is-root?))
             (system "guix remove python-pywal-farg")))))
