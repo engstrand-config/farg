@@ -37,6 +37,7 @@ needed."
            (bg (assoc-ref colors 0))
            (bg-alt (farg:offset (assoc-ref colors 0)))
            (accent (assoc-ref colors 10))
+           (complementary (assoc-ref colors 4))
            (alpha alpha)
            (light? light?)
            (wallpaper wallpaper)

@@ -25,6 +25,7 @@ palette and add your own custom colors."
           ('bg (farg-theme-bg theme))
           ('bg-alt (farg-theme-bg-alt theme))
           ('accent (farg-theme-accent theme))
+          ('complementary (farg-theme-complementary theme))
           ('alpha (farg-theme-alpha theme))
           ('light? (farg-theme-light? theme))
           ('wallpaper (farg-theme-wallpaper theme))

@@ -9,6 +9,7 @@
             farg-theme-bg
             farg-theme-bg-alt
             farg-theme-accent
+            farg-theme-complementary
             farg-theme-alpha
             farg-theme-light?
             farg-theme-wallpaper
@@ -28,6 +29,9 @@
   (accent
    (string "")
    "Accent color.")
+  (complementary
+   (string "")
+   "Complementary accent color.")
   (alpha
    (number 1.0)
    "Default transparency for the theme (0-1).")
