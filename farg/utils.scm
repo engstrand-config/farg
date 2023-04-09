@@ -1,6 +1,6 @@
 (define-module (farg utils)
   #:use-module (ice-9 exceptions)
-  #:export (farg:throw-error maybe-string?))
+  #:export (throw-error maybe-string?))
 
 (define* (throw-error msg)
   "Raises a custom exception with message MSG."

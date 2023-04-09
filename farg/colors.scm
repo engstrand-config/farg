@@ -24,9 +24,8 @@
             farg:blend
             farg:make-readable
             farg:get-contrast
-
-            farg:contrast/rgba
-            farg:contrast/hsl
+            farg:get-contrast/rgba
+            farg:get-contrast/hsl
             farg:lighten/hsl
             farg:darken/hsl
             farg:brighten/hsl
@@ -221,7 +220,7 @@ Conversion of black and white will result in a hue of 0% (undefined)."
 ;; Based on https://github.com/protesilaos/modus-themes/blob/main/modus-themes.el.
 (define* (farg:get-contrast c1 c2)
   "Calculates the WCAG contrast ratio between the hex colors C1 and C2."
-  (farg:contrast/rgba (farg:hex->rgba c1)
+  (farg:get-contrast/rgba (farg:hex->rgba c1)
                       (farg:hex->rgba c2)))
 
 (define* (farg:brighten/hsl hsl amount)
@@ -301,7 +300,7 @@ of RATIO to the hex color BG."
     (let* ((fg-lightness (caddr hsl)))
       (if (or (>= fg-lightness 0.95)
               (<= fg-lightness 0.05)
-              (>= (farg:contrast/hsl hsl bg-hsl) ratio))
+              (>= (farg:get-contrast/hsl hsl bg-hsl) ratio))
           hsl
           (find-readable-color (if bg-light?
                                    (farg:darken/hsl hsl step)

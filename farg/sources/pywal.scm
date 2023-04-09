@@ -38,7 +38,7 @@ needed."
            (accent (assoc-ref colors 10))
            (light? light?)
            (wallpaper wallpaper)
-           (other `(,@colors)))))
+           (other colors))))
 
     (define (run-pywal wallpaper)
       (let ((home-service-activated? (getenv "GUIX_FARG_WALLPAPER"))

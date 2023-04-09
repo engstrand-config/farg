@@ -13,7 +13,7 @@
 (define-configuration
   farg-source
   (theme
-   (farg-theme)
+   (farg-theme (farg-theme))
    "A generated farg theme.")
   (files
    (list '())
