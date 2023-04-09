@@ -5,10 +5,17 @@
   #:use-module (farg utils)
   #:export (farg:theme-provider))
 
-(define* (farg:theme-provider source-generator services)
-  "Provides SOURCE and its generated theme to each service in SERVICES."
-  (define source (source-generator))
-  (define palette
+(define* (farg:theme-provider source-generator services
+                              #:key (palette-extension #f))
+  "Provides SOURCE and its generated theme to each service in SERVICES.
+Specifying a procedure to PALETTE-EXTENSION allows you to wrap the default
+palette and add your own custom colors."
+  (define source
+    (if (procedure? source-generator)
+        (source-generator)
+        source-generator))
+
+  (define default-palette
     (let ((theme (farg-source-theme source)))
       (lambda (field)
         (match field
@@ -25,6 +32,11 @@
                  value
                  (throw-error
                   (format #f "invalid attribute '~a' not found in theme" field)))))))))
+
+  (define palette
+    (if (procedure? palette-extension)
+        (palette-extension default-palette)
+        default-palette))
 
   (cond
    ((list? services)

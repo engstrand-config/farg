@@ -12,7 +12,7 @@
             <home-farg-configuration>
 
             home-farg-configuration-source
-            home-farg-configuration-activation-commands)
+            home-farg-configuration-activation-commands))
 
 (define-configuration
   home-farg-configuration
