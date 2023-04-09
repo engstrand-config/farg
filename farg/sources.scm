@@ -6,7 +6,8 @@
             farg-source?
             farg-source-theme
             farg-source-files
-            farg-source-packages))
+            farg-source-packages
+            farg-source-env-vars))
 
 (define-configuration
   farg-source
@@ -19,4 +20,7 @@
   (packages
    (list '())
    "Additional packages to install to the users profile.")
+  (env-vars
+   (list '())
+   "Environment variables to set when applying the generated theme.")
   (no-serialization))
