@@ -6,7 +6,7 @@
   "Raises a custom exception with message MSG."
   (raise-exception
    (make-exception-with-message
-    (string-append "farg: '" msg))))
+    (string-append "farg: " msg))))
 
 (define* (maybe-string? str)
   (or (boolean? str) (string? str)))
