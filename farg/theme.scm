@@ -1,5 +1,6 @@
 (define-module (farg theme)
   #:use-module (gnu services configuration)
+  #:use-module (farg utils)
   #:export (
             farg-theme
             <farg-theme>

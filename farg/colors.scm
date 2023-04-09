@@ -1,5 +1,7 @@
 (define-module (farg colors)
+  #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
+  #:use-module (farg utils)
   #:export (
             farg:hex->hsl
             farg:hex->rgba
@@ -223,8 +225,8 @@ Conversion of black and white will result in a hue of 0% (undefined)."
                       (farg:hex->rgba c2)))
 
 (define* (farg:brighten/hsl hsl amount)
-  (rgba->hsl (map (lambda (v) (bounded 0 255 (+ v (/ amount 100))))
-                  (hsl->rgba hsl))))
+  (farg:rgba->hsl (map (lambda (v) (bounded 0 255 (+ v (/ amount 100))))
+                       (farg:hsl->rgba hsl))))
 
 (define* (farg:lighten/hsl hsl amount)
   (adjust-lightness hsl amount +))

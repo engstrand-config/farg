@@ -1,13 +1,18 @@
 (define-module (farg sources pywal)
   #:use-module (guix gexp)
+  #:use-module (ice-9 ftw)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
   #:use-module (farg utils)
   #:use-module (farg theme)
+  #:use-module (farg colors)
   #:use-module (farg sources)
   #:use-module (farg packages)
   #:export (farg:generator-pywal))
 
 (define* (farg:generator-pywal wallpaper
-                               #:keys
+                               #:key
                                (light? #f)
                                (saturation 1.0)
                                (generator #f))
@@ -29,13 +34,13 @@ needed."
           (farg-theme
            (fg (assoc-ref colors 15))
            (bg (assoc-ref colors 0))
-           (bg-alt (offset (assoc-ref colors 0)))
+           (bg-alt (farg:offset (assoc-ref colors 0)))
            (accent (assoc-ref colors 10))
            (light? light?)
            (wallpaper wallpaper)
-           (other `((pywal ,colors))))))
+           (other `(,@colors)))))
 
-    (define (run-pywal wallpaper saturation light)
+    (define (run-pywal wallpaper)
       (let ((home-service-activated? (getenv "GUIX_FARG_WALLPAPER"))
             (is-root? (equal? (geteuid) 0)))
         (begin
@@ -49,7 +54,7 @@ needed."
                   "-i" wallpaper
                   "--backend" "wal"
                   "--saturate" (number->string saturation)
-                  (if (light?) "-l" "")
+                  (if light? "-l" "")
                   "-e" "-t" "-s" "-n"
                   "-q")
             " "))
@@ -68,19 +73,21 @@ needed."
       (read-colors
        (open-input-file (string-append pywal-cache-path "/colors")) '() 0))
 
-    (farg-source
-     (theme
-      (begin
-        (run-pywal wallpaper)
-        (run-generator (read-pywal-colors))))
-     (packages (list (python-pywal-farg)))
-     (files
-      `(,@(map
-           (lambda (out-file)
-             `((,(string-append ".cache/wal/" out-file) .
-                ,(local-file (string-append pywal-cache-dir "/" out-file)))))
-           ;; Only include regular files, no directories
-           (filter-map
-            (lambda (file)
-              (equal? (stat:type (stat file)) 'regular))
-            (scandir pywal-cache-dir))))))))
+    (begin
+      (run-pywal wallpaper)
+      (farg-source
+       (theme (run-generator (read-pywal-colors)))
+       (packages (list python-pywal-farg))
+       (files
+        `(,@(map
+             (lambda (out-file)
+               `((,(string-append ".cache/wal/" out-file) .
+                  ,(local-file (string-append pywal-cache-path "/" out-file)))))
+             ;; Only include regular files, no directories
+             (filter-map
+              (lambda (file)
+                (if (equal? (stat:type (stat (string-append pywal-cache-path "/" file)))
+                            'regular)
+                    file
+                    #f))
+              (scandir pywal-cache-path)))))))))

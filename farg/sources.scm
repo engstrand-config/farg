@@ -1,5 +1,6 @@
 (define-module (farg sources)
   #:use-module (gnu services configuration)
+  #:use-module (farg theme)
   #:export (
             farg-source
             <farg-source>
