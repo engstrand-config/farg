@@ -21,8 +21,8 @@
         value)))
 
 (define (create-sequences palette overrides)
-  (let ((text (get-color 'text palette overrides))
-        (background (get-color 'background palette overrides)))
+  (let ((text (get-color 'fg palette overrides))
+        (background (get-color 'bg palette overrides)))
     (string-join
      (append (map (lambda (x) (set-color x (get-color x palette overrides)))
                   (iota 16 0))
