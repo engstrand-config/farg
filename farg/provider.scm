@@ -4,7 +4,7 @@
   #:use-module (gnu services configuration)
   #:use-module (farg utils)
   #:use-module (farg theme)
-  #:use-module (farg sources)
+  #:use-module (farg source)
   #:export (farg:theme-provider))
 
 (define* (farg:theme-provider source-generator services

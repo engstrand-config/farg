@@ -1,4 +1,4 @@
-(define-module (farg sources pywal)
+(define-module (farg source pywal)
   #:use-module (guix gexp)
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 popen)
@@ -7,7 +7,7 @@
   #:use-module (farg utils)
   #:use-module (farg theme)
   #:use-module (farg colors)
-  #:use-module (farg sources)
+  #:use-module (farg source)
   #:use-module (farg packages)
   #:export (farg:generator-pywal))
 

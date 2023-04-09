@@ -1,4 +1,4 @@
-(define-module (farg sources)
+(define-module (farg source)
   #:use-module (gnu services configuration)
   #:use-module (farg theme)
   #:export (

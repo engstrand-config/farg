@@ -4,7 +4,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home services shells)
   #:use-module (gnu services configuration)
-  #:use-module (farg sources)
+  #:use-module (farg source)
   #:use-module (farg packages)
   #:export (
             home-farg-service-type
