@@ -14,6 +14,7 @@
 (define* (farg:generator-pywal wallpaper
                                #:key
                                (light? #f)
+                               (alpha 1.0)
                                (saturation 1.0)
                                (generator #f))
   "Generate a farg theme based on WALLPAPER using pywal.
@@ -36,6 +37,7 @@ needed."
            (bg (assoc-ref colors 0))
            (bg-alt (farg:offset (assoc-ref colors 0)))
            (accent (assoc-ref colors 10))
+           (alpha alpha)
            (light? light?)
            (wallpaper wallpaper)
            (other colors))))
@@ -79,15 +81,15 @@ needed."
        (theme (run-generator (read-pywal-colors)))
        (packages (list python-pywal-farg))
        (files
-        `(,@(map
-             (lambda (out-file)
-               `((,(string-append ".cache/wal/" out-file) .
-                  ,(local-file (string-append pywal-cache-path "/" out-file)))))
-             ;; Only include regular files, no directories
-             (filter-map
-              (lambda (file)
-                (if (equal? (stat:type (stat (string-append pywal-cache-path "/" file)))
-                            'regular)
-                    file
-                    #f))
-              (scandir pywal-cache-path)))))))))
+        (map
+         (lambda (out-file)
+           `(,(string-append ".cache/wal/" out-file)
+             ,(local-file (string-append pywal-cache-path "/" out-file))))
+         ;; Only include regular files, no directories
+         (filter-map
+          (lambda (file)
+            (if (equal? (stat:type (stat (string-append pywal-cache-path "/" file)))
+                        'regular)
+                file
+                #f))
+          (scandir pywal-cache-path))))))))
