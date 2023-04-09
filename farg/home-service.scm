@@ -37,8 +37,8 @@ This can be used to update currently running applications, e.g. pywalfox.")
 
 (define (home-farg-activation-service config)
   #~(begin
-      (display "Activating colorscheme...\n")
-      #$@(home-farg-configuration-activation-commands config)))
+      #$@(home-farg-configuration-activation-commands config)
+      (display "Theme activation finished.\n\n")))
 
 (define (home-farg-extensions original-config extensions)
   (let ((extensions (reverse extensions)))
