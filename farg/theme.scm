@@ -63,7 +63,7 @@
    (boolean #f)
    "If it is a light theme")
   (wallpaper
-   (maybe-string #f)
+   (file-like-or-path "")
    "The wallpaper used in this theme, if any.")
   (other
    (list '())
